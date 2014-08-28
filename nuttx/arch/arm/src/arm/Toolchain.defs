@@ -100,6 +100,12 @@ ifeq ($(CONFIG_DEBUG_CUSTOMOPT),y)
   MAXOPTIMIZATION := $(CONFIG_DEBUG_OPTLEVEL)
 endif
 
+# Built using native system gcc
+ifeq ($(CONFIG_ARM_TOOLCHAIN),NATIVE)
+  CROSSDEV =
+  ARCROSSDEV =
+endif
+
 # NuttX buildroot under Linux or Cygwin
 
 ifeq ($(CONFIG_ARM_TOOLCHAIN),BUILDROOT)

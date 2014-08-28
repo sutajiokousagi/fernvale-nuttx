@@ -123,6 +123,12 @@ config ARCH_CHIP_LPC43XX
 	---help---
 		NPX LPC43XX architectures (ARM Cortex-M4).
 
+config ARCH_CHIP_MT6260
+	bool "Mediatek MT6260"
+	select ARCH_ARM926EJS
+	---help---
+		Mediatek MT6260 (using ARM7EJ-S, similar to ARM926EJ-S)
+
 config ARCH_CHIP_NUC1XX
 	bool "Nuvoton NUC100/120"
 	select ARCH_CORTEXM0
@@ -237,6 +243,7 @@ config ARCH_CHIP
 	default "imx"		if ARCH_CHIP_IMX
 	default "kinetis"	if ARCH_CHIP_KINETIS
 	default "kl"		if ARCH_CHIP_KL
+	default "mt6260"	if ARCH_CHIP_MT6260
 	default "tiva"		if ARCH_CHIP_LM || ARCH_CHIP_TIVA
 	default "lpc17xx"	if ARCH_CHIP_LPC17XX
 	default "lpc214x"	if ARCH_CHIP_LPC214X
@@ -383,6 +390,9 @@ source arch/arm/src/lpc31xx/Kconfig
 endif
 if ARCH_CHIP_LPC43XX
 source arch/arm/src/lpc43xx/Kconfig
+endif
+if ARCH_CHIP_MT6260
+source arch/arm/src/mt6260/Kconfig
 endif
 if ARCH_CHIP_NUC1XX
 source arch/arm/src/nuc1xx/Kconfig

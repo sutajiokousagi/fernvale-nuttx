@@ -147,7 +147,8 @@ ifeq ($(BOARDMAKE),y)
   LDLIBS += -lboard
 endif
 
-LIBGCC = "${shell "$(CC)" $(ARCHCPUFLAGS) -print-libgcc-file-name}"
+#LIBGCC = "${shell "$(CC)" $(ARCHCPUFLAGS) -print-libgcc-file-name}"
+LIBGCC = /home/xobs/Code/fernvale-nuttx-code/libgcc.a
 GCC_LIBDIR := ${shell dirname $(LIBGCC)}
 
 VPATH += chip

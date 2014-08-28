@@ -10,6 +10,13 @@ choice
 	default ARM_TOOLCHAIN_GNU_EABIW if HOST_WINDOWS
 	default ARM_TOOLCHAIN_GNU_EABIL if !HOST_WINDOWS
 
+config ARM_TOOLCHAIN_NATIVE
+    bool "Native toolchain"
+	depends on !WINDOWS_NATIVE
+    ---help---
+        Use native gcc, rather than using a cross-compiler.  Useful if
+        compiling on ARM systems
+
 config ARM_TOOLCHAIN_BUILDROOT
 	bool "Buildroot (Cygwin or Linux)"
 	depends on !WINDOWS_NATIVE

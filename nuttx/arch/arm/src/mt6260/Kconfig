@@ -1,0 +1,22 @@
+#
+# For a description of the syntax of this configuration file,
+# see misc/tools/kconfig-language.txt.
+#
+
+if ARCH_CHIP_MT6260
+comment "MT6260 Configuration Options"
+
+menu "MT6260 Peripheral Selections"
+
+config MT6260_UART0
+	bool
+	default y
+	select ARCH_HAVE_UART0
+
+config MT6260_UART1
+	bool
+	default y
+	select ARCH_HAVE_UART1
+
+endmenu # MT6260 Peripheral Selections
+endif # ARCH_CHIP_MT6260

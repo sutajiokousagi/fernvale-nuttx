@@ -121,9 +121,15 @@
 #  define UINT_FAST24_MAX   0xffffff
 #endif
 
+#ifndef INT_FAST32_MIN
 #define INT_FAST32_MIN      0x80000000
+#endif
+#ifndef INT_FAST32_MAX
 #define INT_FAST32_MAX      0x7fffffff
+#endif
+#ifndef UINT_FAST32_MAX
 #define UINT_FAST32_MAX     0xffffffff
+#endif
 
 #ifdef __INT64_DEFINED
 #  define INT_FAST64_MIN    0x8000000000000000
