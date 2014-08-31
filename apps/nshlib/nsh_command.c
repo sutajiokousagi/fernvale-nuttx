@@ -91,6 +91,7 @@ static int  cmd_exit(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv);
 #endif
 
 static int  cmd_unrecognized(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv);
+extern int  cmd_irqs(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv);
 
 /****************************************************************************
  * Private Data
@@ -223,6 +224,8 @@ static const struct cmdmap_s g_cmdmap[] =
   { "ifup",     cmd_ifup,     2, 2,  "<nic_name>" },
 # endif
 #endif
+
+  { "irqs",     cmd_irqs,     1, 1, ""},
 
 #ifndef CONFIG_DISABLE_SIGNALS
 # ifndef CONFIG_NSH_DISABLE_KILL
@@ -668,6 +671,19 @@ static int cmd_help(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv)
   return OK;
 }
 #endif
+
+int cmd_irqs(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv)
+{
+  int i;
+
+  nsh_output(vtbl, "IRQ statistics:\n");
+  for (i = 0; i < NR_IRQS; i++) {
+    nsh_output(vtbl, "    %2d: ", i);
+    nsh_output(vtbl, "%10d  ", up_irq_count(i));
+    nsh_output(vtbl, "%s\n", up_irq_name(i));
+  }
+  return 0;
+}
 
 /****************************************************************************
  * Name: cmd_unrecognized
