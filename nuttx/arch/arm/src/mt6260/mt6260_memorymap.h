@@ -131,9 +131,11 @@
 
 /* MT6260 Peripheral Registers */
 
+#define MT6260_TDMA_REGISTER_BASE   0x83020000  /* TDMA Timer base */
 #define MT6260_IRQ_REGISTER_BASE    0xa0060000
 #define MT6260_UART0_REGISTER_BASE  0xa0080000
 #define MT6260_UART1_REGISTER_BASE  0xa0090000
+#define MT6260_GPT_REGISTER_BASE    0xa00c0000
 
 /******************************************************************************
  * Inline Functions
