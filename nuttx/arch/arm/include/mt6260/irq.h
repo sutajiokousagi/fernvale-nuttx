@@ -99,7 +99,7 @@
 /* Reserved 46 */
 /* Reserved 47 */
 
-#define MT6260_IRQ_SYSTIMER MT6260_IRQ_TMR0
+#define MT6260_IRQ_SYSTIMER MT6260_IRQ_OSTIMER
 #define NR_IRQS             48
 
 #define MT6260_INTC_MASK0       (MT6260_IRQ_REGISTER_BASE + 0x00)
@@ -146,6 +146,9 @@ extern "C" {
 #else
 #define EXTERN extern
 #endif
+
+  uint32_t up_irq_count(int irq);
+  const char *up_irq_name(int irq);
 
 #undef EXTERN
 #ifdef __cplusplus

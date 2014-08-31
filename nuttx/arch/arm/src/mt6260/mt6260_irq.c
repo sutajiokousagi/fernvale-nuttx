@@ -68,6 +68,9 @@ volatile uint32_t *current_regs;
 
 extern int _svectors; /* Type does not matter */
 
+/* The number of times each IRQ has fired */
+static uint32_t irq_fire_counts[NR_IRQS];
+
 /************************************************************************
  * Private Functions
  ************************************************************************/
@@ -204,4 +207,24 @@ void up_maskack_irq(int irq)
       putreg32((1 << irq), MT6260_INTC_MASK1_SET);
       putreg32((1 << (irq-32)), MT6260_INTC_ACK1);
     }
+
+  irq_fire_counts[irq]++;
+}
+
+uint32_t up_irq_count(int irq)
+{
+  if (irq >= NR_IRQS)
+    return 0;
+  return irq_fire_counts[irq];
+}
+
+const char *up_irq_name(int irq)
+{
+  switch(irq) {
+    case  1: return "C Timer 1";
+    case  2: return "C Timer 2";
+    case 17: return "UART1";
+    case 15: return "UART0";
+    default: return "unknown";
+  }
 }
