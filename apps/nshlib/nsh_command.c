@@ -92,6 +92,8 @@ static int  cmd_exit(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv);
 
 static int  cmd_unrecognized(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv);
 extern int  cmd_irqs(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv);
+extern int  cmd_peek(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv);
+extern int  cmd_poke(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv);
 
 /****************************************************************************
  * Private Data
@@ -226,6 +228,8 @@ static const struct cmdmap_s g_cmdmap[] =
 #endif
 
   { "irqs",     cmd_irqs,     1, 1, ""},
+  { "peek",     cmd_peek,     2, 2, "<address>"},
+  { "poke",     cmd_poke,     3, 3, "<address> <value>"},
 
 #ifndef CONFIG_DISABLE_SIGNALS
 # ifndef CONFIG_NSH_DISABLE_KILL
@@ -672,6 +676,14 @@ static int cmd_help(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv)
 }
 #endif
 
+#include <stdlib.h>
+#ifndef getreg32
+# define getreg32(a)          (*(volatile uint32_t *)(a))
+#endif
+#ifndef putreg32
+#define putreg32(v,a)         (*(volatile uint32_t *)(a) = (v))
+#endif
+
 int cmd_irqs(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv)
 {
   int i;
@@ -682,6 +694,29 @@ int cmd_irqs(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv)
     nsh_output(vtbl, "%10d  ", up_irq_count(i));
     nsh_output(vtbl, "%s\n", up_irq_name(i));
   }
+  return 0;
+}
+
+int cmd_peek(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv)
+{
+  uint32_t addr = strtoul(argv[1], NULL, 0);
+
+  nsh_output(vtbl, "Value at 0x%08x: ", addr);
+  nsh_output(vtbl, "0x%08x\n", getreg32(addr));
+
+  return 0;
+}
+
+int cmd_poke(FAR struct nsh_vtbl_s *vtbl, int argc, char **argv)
+{
+  uint32_t addr = strtoul(argv[1], NULL, 0);
+  uint32_t val  = strtoul(argv[2], NULL, 0);
+
+  nsh_output(vtbl, "Setting value at 0x%08x ", addr);
+  nsh_output(vtbl, "to 0x%08x... ", val);
+  putreg32(val, addr);
+  nsh_output(vtbl, "Ok.\n");
+
   return 0;
 }
 
