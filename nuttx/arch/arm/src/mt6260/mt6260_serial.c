@@ -481,7 +481,6 @@ static int up_interrupt(int irq, void *context)
   struct uart_dev_s *dev = NULL;
   struct up_dev_s   *priv;
   uint32_t           status;
-  uint32_t           old_lsr;
   int                passes = 0;
 
   if (g_uart1priv.irq == irq)
