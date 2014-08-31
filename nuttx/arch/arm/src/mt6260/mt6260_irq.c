@@ -136,7 +136,7 @@ void up_disable_irq(int irq)
        * Set the associated bit to disable the interrupt
        */
 
-      putreg32((1 << (irq-32)), MT6260_INTC_MASK1_SET);
+      putreg32((1 << (irq - 32)), MT6260_INTC_MASK1_SET);
     }
 }
 
@@ -168,7 +168,7 @@ void up_enable_irq(int irq)
        * Clear the associated bit to enable the interrupt
        */
 
-      putreg32((1 << (irq-32)), MT6260_INTC_MASK1_CLR);
+      putreg32((1 << (irq - 32)), MT6260_INTC_MASK1_CLR);
     }
 }
 
@@ -204,11 +204,27 @@ void up_maskack_irq(int irq)
        * Set the associated status bit to clear the interrupt
        */
 
-      putreg32((1 << irq), MT6260_INTC_MASK1_SET);
-      putreg32((1 << (irq-32)), MT6260_INTC_ACK1);
+      putreg32((1 << (irq - 32)), MT6260_INTC_MASK1_SET);
+      putreg32((1 << (irq - 32)), MT6260_INTC_ACK1);
     }
 
   irq_fire_counts[irq]++;
+}
+
+void up_irq_level(int irq)
+{
+  if (irq < 32)
+    putreg32(1 << irq, MT6260_INTC_LEVEL0_SET);
+  else
+    putreg32(1 << (irq - 32), MT6260_INTC_LEVEL1_SET);
+}
+
+void up_irq_edge(int irq)
+{
+  if (irq < 32)
+    putreg32(1 << irq, MT6260_INTC_LEVEL0_CLR);
+  else
+    putreg32(1 << (irq - 32), MT6260_INTC_LEVEL1_CLR);
 }
 
 uint32_t up_irq_count(int irq)
@@ -221,10 +237,9 @@ uint32_t up_irq_count(int irq)
 const char *up_irq_name(int irq)
 {
   switch(irq) {
-    case  1: return "C Timer 1";
-    case  2: return "C Timer 2";
-    case 17: return "UART1";
     case 15: return "UART0";
+    case 17: return "UART1";
+    case 23: return "GPT";
     default: return "unknown";
   }
 }
