@@ -111,6 +111,8 @@ extern "C" {
 
   uint32_t up_irq_count(int irq);
   const char *up_irq_name(int irq);
+  void up_irq_edge(int irq);
+  void up_irq_level(int irq);
 
 #undef EXTERN
 #ifdef __cplusplus
