@@ -14,6 +14,7 @@
 #include "sha1.h"
 
 #define BAUDRATE B921600
+#define WRITE_ALL_AT_ONCE 1 /* Write bootloader in one write() */
 
 static const uint32_t mtk_config_offset = 0x80000000;
 
@@ -994,6 +995,20 @@ int fernvale_set_serial(int serfd) {
 	return 0;
 }
 
+static int fernvale_banner(int fd) {
+	uint8_t b;
+
+	while (-1 != read(fd, &b, 1)) {
+		if (b == '>')
+			return 0;
+		printf("%c", b);
+		fflush(stdout);
+		if (b == '\n')
+		printf("\t");
+	}
+	return -1;
+}
+
 static void cmd_begin(const char *msg) {
 	printf(msg);
 	printf("... ");
@@ -1014,17 +1029,23 @@ static void cmd_end_fmt(const char *fmt, ...) {
 }
 
 int main(int argc, char **argv) {
-	int serfd;
+	int serfd, binfd;
 	uint32_t ret;
 	
-	if (argc != 2) {
-		printf("Usage: %s [serial port]\n", argv[0]);
+	if (argc != 3) {
+		printf("Usage: %s [serial port] [firmware]\n", argv[0]);
 		exit(1);
 	}
 
 	serfd = open(argv[1], O_RDWR);
 	if (-1 == serfd) {
 		perror("Unable to open serial port");
+		exit(1);
+	}
+
+	binfd = open(argv[2], O_RDONLY);
+	if (-1 == binfd) {
+		perror("Unable to open firmware file");
 		exit(1);
 	}
 
@@ -1174,52 +1195,6 @@ int main(int argc, char **argv) {
 	ret = fernvale_read32(serfd, 0xa0510000);
 	cmd_end_fmt("0x%04x", ret);
 
-	/*
-	{
-		cmd_begin("Trying 0xda");
-		fernvale_send_cmd(serfd, 0xda);
-		fernvale_send_int32(serfd, 2);
-		fernvale_send_int32(serfd, 0);
-		fernvale_send_int32(serfd, 44);
-		printf("Results:\n");
-		int res;
-		while ((res = fernvale_get_int16(serfd)) != -1)
-			printf("0x%04x\n", res);
-		exit(1);
-	}
-	*/
-
-#if 0
-	cmd_begin("Sending bootloader");
-	fernvale_send_bootloader(serfd, 0x70008000, 0x7000c000, 0x00001000,
-				 "stage1bl.bin");
-
-	/* Communicating with bootloader (?!) */
-	{
-		cmd_begin("Getting NOR ID from bootloader");
-		fernvale_send_int32_no_response(serfd, 3);
-		cmd_end_fmt("%02x %02x %02x %02x %02x %02x %02x %02x",
-			fernvale_get_int16(serfd),
-			fernvale_get_int16(serfd),
-			fernvale_get_int16(serfd),
-			fernvale_get_int16(serfd),
-			fernvale_get_int16(serfd),
-			fernvale_get_int16(serfd),
-			fernvale_get_int16(serfd),
-			fernvale_get_int16(serfd));
-
-		uint8_t bfr[0x100];
-		memset(bfr, 0, sizeof(bfr));
-		bfr[0] = 2;
-		write(serfd, bfr, sizeof(bfr));
-		printf("Response bl (9): 0x%02x\n", fernvale_get_int8(serfd));
-		printf("Response bl (10): 0x%02x\n", fernvale_get_int8(serfd));
-		printf("Response bl (11): 0x%08x\n", fernvale_get_int32(serfd));
-		printf("Response bl (12): 0x%04x\n", fernvale_get_int16(serfd));
-		printf("Response bl (13): 0x%08x\n", fernvale_get_int32(serfd));
-	}
-#endif
-
 	cmd_begin("Checking on PSRAM mapping again");
 	ret = fernvale_read32(serfd, 0xa0510000);
 	cmd_end_fmt("0x%04x", ret);
@@ -1240,46 +1215,73 @@ int main(int argc, char **argv) {
 	ret = fernvale_get_int16(serfd);
 	cmd_end_fmt("0x%04x", ret);
 
-#if 0
-	cmd_begin("Sending stage 2 bootloader");
-	//fernvale_cmd_send_file(serfd, 0x70007000, "stage2bl.bin");
-	fernvale_cmd_send_file(serfd, 0x70006598, "stage2bl.bin");
-	cmd_end();
-
-//	cmd_begin("Sending stage 3 bootloader");
-//	fernvale_cmd_send_file(serfd, 0x10020000, "stage3bl.bin");
-//	cmd_end();
-
-	cmd_begin("Moving \"bx, lr\" to 0x70007000");
-	//fernvale_cmd_send_file(serfd, 0x70007000, "bxlr.bin");
-	//fernvale_cmd_send_file(serfd, 0x70007000, "infinite-loop.bin");
-	fernvale_cmd_send_file(serfd, 0x70007000, "loader.bin");
-	cmd_end();
-#endif
-
 	cmd_begin("Loading Fernly USB loader");
-	fernvale_cmd_send_file(serfd, 0x70007000, "usb-loader.bin");
+	fernvale_cmd_send_file(serfd, 0x7000c000, "usb-loader.bin");
 	cmd_end();
 
 	cmd_begin("Executing usb-loader.bin");
-	fernvale_cmd_jump(serfd, 0x70007000);
+	fernvale_cmd_jump(serfd, 0x7000c000);
 	cmd_end();
 
-	/*
-	while (1) {
-		uint8_t bfr[1];
-		int i;
-		static int loops = 0;
-		for (i = 0; i < sizeof(bfr); i++)
-			bfr[i] = i + 32 + loops;
+	cmd_begin("Waiting for banner");
+	fernvale_banner(serfd);
+	cmd_end();
 
-		write(serfd, bfr, sizeof(bfr));
-		if (read(serfd, bfr, sizeof(bfr)) != sizeof(bfr))
+	cmd_begin("Writing firmware");
+	{
+		struct stat stats;
+		unsigned int bytes_to_write;
+		int i;
+
+		if (-1 == fstat(binfd, &stats)) {
+			perror("Unable to get file stats");
 			exit(1);
-		printf("Loop %d\n", loops++);
-		print_hex(bfr, sizeof(bfr), 0);
+		}
+
+		bytes_to_write = stats.st_size;
+		printf("%d bytes... ", bytes_to_write);
+		fflush(stdout);
+		{
+#if 0
+			write(serfd, &bytes_to_write, 4);
+#else
+			uint8_t b;
+
+			b = bytes_to_write & 0xff;
+			write(serfd, &b, 1);
+
+			b = bytes_to_write >> 8 & 0xff;
+			write(serfd, &b, 1);
+
+			b = bytes_to_write >> 16 & 0xff;
+			write(serfd, &b, 1);
+
+			b = bytes_to_write >> 24 & 0xff;
+			write(serfd, &b, 1);
+#endif
+		}
+
+		uint8_t bfr[stats.st_size];
+		read(binfd, bfr, sizeof(bfr));
+
+#if (WRITE_ALL_AT_ONCE)
+		if (write(serfd, bfr, sizeof(bfr)) != sizeof(bfr)) {
+			perror("Unable to write firmware");
+			exit(1);
+		}
+		i = sizeof(bfr);
+#else
+		for (i = 0; i < sizeof(bfr); i++) {
+			printf("%6d / %6d\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", i, (int)sizeof(bfr));
+			if (1 != write(serfd, &bfr[i], 1)) {
+				perror("Unable to write firmware");
+				exit(1);
+			}
+		}
+#endif
+
+		cmd_end_fmt("%6d / %6d", i, (int)sizeof(bfr));
 	}
-	*/
 
 	close(serfd);
 	return execl("/usr/bin/screen", "screen", argv[1], "115200", NULL);
