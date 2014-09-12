@@ -15,6 +15,7 @@
 
 #define BAUDRATE B921600
 #define WRITE_ALL_AT_ONCE 1 /* Write bootloader in one write() */
+//#define MONITOR_BOOT /* Whether to monitor serial, or call screen */
 
 static const uint32_t mtk_config_offset = 0x80000000;
 
@@ -1283,6 +1284,16 @@ int main(int argc, char **argv) {
 		cmd_end_fmt("%6d / %6d", i, (int)sizeof(bfr));
 	}
 
+#ifdef MONITOR_BOOT
+	{
+		uint8_t bfr;
+		while (read(serfd, &bfr, 1) == 1)
+			write(1, &bfr, 1);
+		printf("\n");
+	}
+	return 0;
+#else
 	close(serfd);
 	return execl("/usr/bin/screen", "screen", argv[1], "115200", NULL);
+#endif
 }

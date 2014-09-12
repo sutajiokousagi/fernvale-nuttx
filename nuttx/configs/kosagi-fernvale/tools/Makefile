@@ -33,8 +33,8 @@
 #
 ############################################################################
 
-OBJS		= fernly-loader.o
-BIN		= fernly-loader
+OBJS		= fernly-serial-loader.o fernly-usb-loader.o sha1.o
+BIN		= fernly-serial-loader fernly-usb-loader
 
 CFLAGS		+= -Wall -g
 
@@ -44,7 +44,10 @@ all: $(BIN)
 $(OBJS): %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
-lpchdr: $(OBJS)
+fernly-usb-loader: fernly-usb-loader.o sha1.o
+	$(CC) -o $@ $^
+
+fernly-serial-loader: fernly-serial-loader.o
 	$(CC) -o $@ $^
 
 clean:
