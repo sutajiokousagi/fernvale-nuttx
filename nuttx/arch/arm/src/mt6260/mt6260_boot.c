@@ -49,11 +49,18 @@
  * Public Functions
  ******************************************************************************/
 
+extern uint32_t bssStart, bssEnd;
+
 void up_boot(void)
 {
-  /* Perform early serial initialization */
+  int i;
+
+  /* Zero out the BSS, since the ASM routine doesn't do it properly */
+  for (i = bssStart; i < bssEnd; i += 4)
+    *((uint32_t *)i) = 0;
 
 #ifdef USE_EARLYSERIALINIT
+  /* Perform early serial initialization */
   up_earlyserialinit();
 #endif
 }

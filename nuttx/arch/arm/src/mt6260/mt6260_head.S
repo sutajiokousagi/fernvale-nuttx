@@ -185,8 +185,12 @@ _start:
 	 * end of memory.  See g_idle_topstack below.
 	 */
 
+.global bssStart
+bssStart:
 .Linitparms:
 	.long	_sbss
+.global bssEnd
+bssEnd:
 	.long	_ebss
 	.long	_ebss+CONFIG_IDLETHREAD_STACKSIZE-4
 
