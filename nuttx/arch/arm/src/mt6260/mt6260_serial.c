@@ -528,6 +528,11 @@ static int up_interrupt(int irq, void *context)
           uart_xmitchars(dev);
         }
 
+      else if (status == UART_IIR_ID_RXTIMEOUT)
+        {
+          uart_recvchars(dev);
+        }
+
       else
         {
           lowsyslog("ISR: Unrecognized status: 0x%x\n", status);
