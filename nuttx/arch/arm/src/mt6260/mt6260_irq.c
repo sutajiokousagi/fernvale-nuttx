@@ -240,6 +240,7 @@ const char *up_irq_name(int irq)
     case 15: return "UART0";
     case 17: return "UART1";
     case 23: return "GPT";
+    case 25: return "USB";
     default: return "unknown";
   }
 }

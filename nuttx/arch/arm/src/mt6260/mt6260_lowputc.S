@@ -88,9 +88,9 @@ up_lowputc:
 	/* On entry, r0 holds the character to be printed */
 
 #ifdef CONFIG_UART1_SERIAL_CONSOLE
-	ldr	r2, =MT6260_UART1_REGISTER_BASE	/* r2=UART1 base */
+	ldr	r2, =MT6260_UART1_VADDR	/* r2=UART1 base */
 #else
-	ldr	r2, =MT6260_UART0_REGISTER_BASE	/* r2=UART0 base */
+	ldr	r2, =MT6260_UART0_VADDR	/* r2=UART0 base */
 #endif
 
 	/* Poll the TX fifo trigger level bit of the UART_LSR
