@@ -747,8 +747,12 @@ void up_earlyserialinit(void)
   up_disableuartint(TTYS0_DEV.priv, NULL);
   up_disableuartint(TTYS1_DEV.priv, NULL);
 
+#ifdef CONFIG_DEV_CONSOLE
+#ifndef CONFIG_NO_SERIAL_CONSOLE
   CONSOLE_DEV.isconsole = true;
   up_setup(&CONSOLE_DEV);
+#endif
+#endif
 }
 
 /****************************************************************************
@@ -762,7 +766,11 @@ void up_earlyserialinit(void)
 
 void up_serialinit(void)
 {
+#ifdef CONFIG_DEV_CONSOLE
+#ifndef CONFIG_NO_SERIAL_CONSOLE
   (void)uart_register("/dev/console", &CONSOLE_DEV);
+#endif
+#endif
   (void)uart_register("/dev/ttyS0", &TTYS0_DEV);
   (void)uart_register("/dev/ttyS1", &TTYS1_DEV);
 }
