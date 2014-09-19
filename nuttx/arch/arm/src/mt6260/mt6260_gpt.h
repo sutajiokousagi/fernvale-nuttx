@@ -110,12 +110,12 @@
 
 static uint32_t gpt_read(uint32_t reg)
 {
-    return getreg32(MT6260_GPT_REGISTER_BASE + reg);
+    return getreg32(MT6260_GPT_VADDR + reg);
 }
 
 static void gpt_write(uint32_t val, uint32_t reg)
 {
-    putreg32(val, MT6260_GPT_REGISTER_BASE + reg);
+    putreg32(val, MT6260_GPT_VADDR + reg);
 }
 
 #endif  /* __MT6260_GPT_H */

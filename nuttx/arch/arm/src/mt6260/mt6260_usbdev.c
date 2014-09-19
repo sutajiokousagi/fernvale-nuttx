@@ -73,13 +73,13 @@
 
 /* Verify the selected USB attach interrupt GIO line */
 
-#if CONFIG_MT6260_GIO_USBATTACH < 0 || CONFIG_MT6260_GIO_USBATTACH > 15
-#  error "CONFIG_MT6260_GIO_USBATTACH invalid"
-#endif
+//#if CONFIG_MT6260_GIO_USBATTACH < 0 || CONFIG_MT6260_GIO_USBATTACH > 15
+//#  error "CONFIG_MT6260_GIO_USBATTACH invalid"
+//#endif
 
 /* Calculate the IRQ number associated with this GIO */
 
-#define IRQ_USBATTACH (MT6260_IRQ_EXT0+CONFIG_MT6260_GIO_USBATTACH)
+//#define IRQ_USBATTACH (MT6260_IRQ_EXT0+CONFIG_MT6260_GIO_USBATTACH)
 
 /* Vendor ID & Product ID of the USB device */
 
@@ -123,12 +123,40 @@
 #define MT6260_TRACEERR_STALLEDREQUEST    0x0014
 #define MT6260_TRACEERR_STALLEDSETFEATURE 0x0015
 
+#ifdef CONFIG_USBDEV_TRACE_STRINGS
+const struct trace_msg_t g_usb_trace_strings_deverror[] =
+{
+  TRACE_STR(MT6260_TRACEERR_ALLOCFAIL         ),
+  TRACE_STR(MT6260_TRACEERR_ATTACHIRQREG      ),
+  TRACE_STR(MT6260_TRACEERR_BINDFAILED        ),
+  TRACE_STR(MT6260_TRACEERR_COREIRQREG        ),
+  TRACE_STR(MT6260_TRACEERR_DRIVER            ),
+  TRACE_STR(MT6260_TRACEERR_DRIVERREGISTERED  ),
+  TRACE_STR(MT6260_TRACEERR_EPREAD            ),
+  TRACE_STR(MT6260_TRACEERR_EWRITE            ),
+  TRACE_STR(MT6260_TRACEERR_INVALIDPARMS      ),
+  TRACE_STR(MT6260_TRACEERR_NOEP              ),
+  TRACE_STR(MT6260_TRACEERR_NOTCONFIGURED     ),
+  TRACE_STR(MT6260_TRACEERR_NULLPACKET        ),
+  TRACE_STR(MT6260_TRACEERR_NULLREQUEST       ),
+  TRACE_STR(MT6260_TRACEERR_REQABORTED        ),
+  TRACE_STR(MT6260_TRACEERR_STALLEDCLRFEATURE ),
+  TRACE_STR(MT6260_TRACEERR_STALLEDISPATCH    ),
+  TRACE_STR(MT6260_TRACEERR_STALLEDGETST      ),
+  TRACE_STR(MT6260_TRACEERR_STALLEDGETSTEP    ),
+  TRACE_STR(MT6260_TRACEERR_STALLEDGETSTRECIP ),
+  TRACE_STR(MT6260_TRACEERR_STALLEDREQUEST    ),
+  TRACE_STR(MT6260_TRACEERR_STALLEDSETFEATURE ),
+  TRACE_STR_END
+};
+#endif
+
 /* Trace interrupt codes */
 
 #define MT6260_TRACEINTID_ATTACHED        0x0001
 #define MT6260_TRACEINTID_ATTACH          0x0002
 #define MT6260_TRACEINTID_CLEARFEATURE    0x0003
-#define MT6260_TRACEINTID_CONNECTED       0x0004
+#define MT6260_TRACEINTID_POWERDOWN       0x0004
 #define MT6260_TRACEINTID_CONTROL         0x0005
 #define MT6260_TRACEINTID_DETACHED        0x0006
 #define MT6260_TRACEINTID_DISCONNECTED    0x0007
@@ -140,8 +168,8 @@
 #define MT6260_TRACEINTID_GETSTATUS       0x000d
 #define MT6260_TRACEINTID_RESET           0x000e
 #define MT6260_TRACEINTID_RESUME          0x000f
-#define MT6260_TRACEINTID_RXFIFO          0x0010
-#define MT6260_TRACEINTID_RXPKTRDY        0x0011
+#define MT6260_TRACEINTID_OUTFIFO          0x0010
+#define MT6260_TRACEINTID_OUTPKTRDY        0x0011
 #define MT6260_TRACEINTID_SESSRQ          0x0012
 #define MT6260_TRACEINTID_SETADDRESS      0x0013
 #define MT6260_TRACEINTID_SETFEATURE      0x0014
@@ -149,13 +177,51 @@
 #define MT6260_TRACEINTID_SUSPEND         0x0016
 #define MT6260_TRACEINTID_SYNCHFRAME      0x0017
 #define MT6260_TRACEINTID_TESTMODE        0x0018
-#define MT6260_TRACEINTID_TXFIFO          0x0019
-#define MT6260_TRACEINTID_TXFIFOSETEND    0x001a
-#define MT6260_TRACEINTID_TXFIFOSTALL     0x001b
-#define MT6260_TRACEINTID_TXPKTRDY        0x001c
+#define MT6260_TRACEINTID_INFIFO          0x0019
+#define MT6260_TRACEINTID_INFIFOSETEND    0x001a
+#define MT6260_TRACEINTID_INFIFOSTALL     0x001b
+#define MT6260_TRACEINTID_INPKTRDY        0x001c
 #define MT6260_TRACEINTID_UNKNOWN         0x001d
 #define MT6260_TRACEINTID_USBCTLR         0x001d
 #define MT6260_TRACEINTID_VBUSERR         0x001f
+
+#ifdef CONFIG_USBDEV_TRACE_STRINGS
+const struct trace_msg_t g_usb_trace_strings_intdecode[] =
+{
+  TRACE_STR(MT6260_TRACEINTID_ATTACHED        ),
+  TRACE_STR(MT6260_TRACEINTID_ATTACH          ),
+  TRACE_STR(MT6260_TRACEINTID_CLEARFEATURE    ),
+  TRACE_STR(MT6260_TRACEINTID_POWERDOWN       ),
+  TRACE_STR(MT6260_TRACEINTID_CONTROL         ),
+  TRACE_STR(MT6260_TRACEINTID_DETACHED        ),
+  TRACE_STR(MT6260_TRACEINTID_DISCONNECTED    ),
+  TRACE_STR(MT6260_TRACEINTID_DISPATCH        ),
+  TRACE_STR(MT6260_TRACEINTID_GETENDPOINT     ),
+  TRACE_STR(MT6260_TRACEINTID_GETIFDEV        ),
+  TRACE_STR(MT6260_TRACEINTID_GETSETDESC      ),
+  TRACE_STR(MT6260_TRACEINTID_GETSETIFCONFIG  ),
+  TRACE_STR(MT6260_TRACEINTID_GETSTATUS       ),
+  TRACE_STR(MT6260_TRACEINTID_RESET           ),
+  TRACE_STR(MT6260_TRACEINTID_RESUME          ),
+  TRACE_STR(MT6260_TRACEINTID_OUTFIFO          ),
+  TRACE_STR(MT6260_TRACEINTID_OUTPKTRDY        ),
+  TRACE_STR(MT6260_TRACEINTID_SESSRQ          ),
+  TRACE_STR(MT6260_TRACEINTID_SETADDRESS      ),
+  TRACE_STR(MT6260_TRACEINTID_SETFEATURE      ),
+  TRACE_STR(MT6260_TRACEINTID_SOF             ),
+  TRACE_STR(MT6260_TRACEINTID_SUSPEND         ),
+  TRACE_STR(MT6260_TRACEINTID_SYNCHFRAME      ),
+  TRACE_STR(MT6260_TRACEINTID_TESTMODE        ),
+  TRACE_STR(MT6260_TRACEINTID_INFIFO          ),
+  TRACE_STR(MT6260_TRACEINTID_INFIFOSETEND    ),
+  TRACE_STR(MT6260_TRACEINTID_INFIFOSTALL     ),
+  TRACE_STR(MT6260_TRACEINTID_INPKTRDY        ),
+  TRACE_STR(MT6260_TRACEINTID_UNKNOWN         ),
+  TRACE_STR(MT6260_TRACEINTID_USBCTLR         ),
+  TRACE_STR(MT6260_TRACEINTID_VBUSERR         ),
+  TRACE_STR_END
+};
+#endif
 
 /* Hardware interface **********************************************************/
 
@@ -169,7 +235,7 @@
 
 #define MT6260_EP0MAXPACKET      64          /* EP0 max packet size */
 #define MT6260_BULKMAXPACKET     64          /* Bulk endpoint max packet */
-#define MT6260_INTRMAXPACKET     64          /* Interrupt endpoint max packet */
+#define MT6260_INTRMAXPACKET     16          /* Interrupt endpoint max packet */
 #define MT6260_NENDPOINTS         4          /* Includes EP0 */
 
 /* Endpoint numbers */
@@ -254,12 +320,7 @@ struct mt6260_epinfo_s
 {
   uint8_t                addr;          /* Logical endpoint address */
   uint8_t                attr;          /* Endpoint attributes */
-  uint8_t                fifo;          /* FIFO mx pkt size + dual buffer bits */
-#ifdef CONFIG_USBDEV_HIGHSPEED
-  uint16_t               maxpacket;     /* Max packet size */
-#else
   uint8_t                maxpacket;     /* Max packet size */
-#endif
 };
 
 /*******************************************************************************
@@ -269,8 +330,8 @@ struct mt6260_epinfo_s
 /* Register operations */
 
 #if defined(CONFIG_MT6260_USBDEV_REGDEBUG) && defined(CONFIG_DEBUG)
-static uint32_t mt6260_getreg8(uint32_t addr);
-static uint32_t mt6260_getreg16(uint32_t addr);
+static uint8_t mt6260_getreg8(uint32_t addr);
+static uint16_t mt6260_getreg16(uint32_t addr);
 static uint32_t mt6260_getreg32(uint32_t addr);
 static void mt6260_putreg8(uint8_t val, uint32_t addr);
 static void mt6260_putreg16(uint16_t val, uint32_t addr);
@@ -310,7 +371,7 @@ static void mt6260_dispatchrequest(struct mt6260_usbdev_s *priv,
 static inline void mt6260_ep0setup(struct mt6260_usbdev_s *priv);
 static inline uint32_t mt6260_highestpriinterrupt(int intstatus);
 static int  mt6260_ctlrinterrupt(int irq, FAR void *context);
-static int  mt6260_attachinterrupt(int irq, FAR void *context);
+//static int  mt6260_attachinterrupt(int irq, FAR void *context);
 
 /* Initialization operations */
 
@@ -371,9 +432,7 @@ static const struct usbdev_ops_s g_devops =
   .getframe    = mt6260_getframe,
   .wakeup      = mt6260_wakeup,
   .selfpowered = mt6260_selfpowered,
-#ifdef CONFIG_MT6260_GIO_USBDPPULLUP
   .pullup      = mt6260_pullup,
-#endif
 };
 
 /* There is only one, single, pre-allocated instance of the driver structure */
@@ -385,28 +444,24 @@ static struct mt6260_usbdev_s g_usbdev;
 static const struct mt6260_epinfo_s g_epinfo[MT6260_NENDPOINTS] =
 {
   {
-    0,                                        /* EP0 */
-    USB_EP_ATTR_XFER_CONTROL,                 /* Type: Control IN/OUT */
-    USB_TXFIFO2_SZ_64|USB_TXFIFO2_SINGLE_BUF, /* Bits for TX/RXFIFO2 */
-    MT6260_EP0MAXPACKET                        /* Max packet size */
+    0,                                /* EP0 */
+    USB_EP_ATTR_XFER_CONTROL,         /* Type: Control IN/OUT */
+    MT6260_EP0MAXPACKET               /* Max packet size */
   },
   {
-    MT6260_EPBULKIN | USB_DIR_IN,              /* Logical endpoint number: 1 IN */
-    USB_EP_ATTR_XFER_BULK,                    /* Type: Bulk */
-    USB_TXFIFO2_SZ_64|USB_TXFIFO2_SINGLE_BUF, /* Bits for TX/RXFIFO2 */
-    MT6260_BULKMAXPACKET,                      /* Max packet size */
+    MT6260_EPBULKIN | USB_DIR_IN,     /* Logical endpoint number: 1 IN */
+    USB_EP_ATTR_XFER_BULK,            /* Type: Bulk */
+    MT6260_BULKMAXPACKET,             /* Max packet size */
   },
   {
-    MT6260_EPBULKOUT | USB_DIR_OUT,            /* Logical endpoint number: 2 OUT */
-    USB_EP_ATTR_XFER_BULK,                    /* Type: Bulk */
-    USB_TXFIFO2_SZ_64|USB_TXFIFO2_SINGLE_BUF, /* Bits for TX/RXFIFO2 */
-    MT6260_BULKMAXPACKET                       /* Max packet size */
+    MT6260_EPBULKOUT | USB_DIR_OUT,   /* Logical endpoint number: 2 OUT */
+    USB_EP_ATTR_XFER_BULK,            /* Type: Bulk */
+    MT6260_BULKMAXPACKET              /* Max packet size */
   },
   {
-    MT6260_EPINTRIN| USB_DIR_IN,               /* Logical endpoint number: 3 IN */
-    USB_EP_ATTR_XFER_INT,                     /* Type: Interrupt */
-    USB_TXFIFO2_SZ_64|USB_TXFIFO2_SINGLE_BUF, /* Bits for TX/RXFIFO2 */
-    MT6260_INTRMAXPACKET                       /* Max packet size */
+    MT6260_EPINTRIN | USB_DIR_IN,     /* Logical endpoint number: 3 IN */
+    USB_EP_ATTR_XFER_INT,             /* Type: Interrupt */
+    MT6260_INTRMAXPACKET              /* Max packet size */
   }
 };
 
@@ -422,7 +477,31 @@ static const struct mt6260_epinfo_s g_epinfo[MT6260_NENDPOINTS] =
  *
  *******************************************************************************/
 
+#if defined(CONFIG_DEBUG)
+#define HEX_CHARS "0123456789abcdef"
+void serial_puth(uint32_t pair, int digits)
+{
+  if (digits >= 8)
+    up_lowputc(HEX_CHARS[(pair >> 28) & 0xf]);
+  if (digits >= 7)
+    up_lowputc(HEX_CHARS[(pair >> 24) & 0xf]);
+  if (digits >= 6)
+    up_lowputc(HEX_CHARS[(pair >> 20) & 0xf]);
+  if (digits >= 5)
+    up_lowputc(HEX_CHARS[(pair >> 16) & 0xf]);
+  if (digits >= 4)
+    up_lowputc(HEX_CHARS[(pair >> 12) & 0xf]);
+  if (digits >= 3)
+    up_lowputc(HEX_CHARS[(pair >> 8) & 0xf]);
+  if (digits >= 2)
+    up_lowputc(HEX_CHARS[(pair >> 4) & 0xf]);
+  if (digits >= 1)
+    up_lowputc(HEX_CHARS[(pair >> 0) & 0xf]);
+}
+#endif
+
 #if defined(CONFIG_MT6260_USBDEV_REGDEBUG) && defined(CONFIG_DEBUG)
+
 static uint8_t mt6260_getreg8(uint32_t addr)
 {
   static uint32_t prevaddr = 0;
@@ -443,7 +522,8 @@ static uint8_t mt6260_getreg8(uint32_t addr)
         {
            if (count == 4)
              {
-               lldbg("...\n");
+               //lldbg("...\n");
+               up_lowputs("...\n");
              }
           return val;
         }
@@ -459,7 +539,10 @@ static uint8_t mt6260_getreg8(uint32_t addr)
          {
            /* Yes.. then show how many times the value repeated */
 
-           lldbg("[repeats %d more times]\n", count-3);
+           //lldbg("[repeats %d more times]\n", count-3);
+           up_lowputs("[repeats 0x");
+           serial_puth(count - 3, 8);
+           up_lowputs(" more times]\n");
          }
 
        /* Save the new address, value, and count */
@@ -471,7 +554,11 @@ static uint8_t mt6260_getreg8(uint32_t addr)
 
   /* Show the register value read */
 
-  lldbg("%08x->%02x\n", addr, val);
+  //lldbg("%08x->%02x\n", addr, val);
+  serial_puth(addr, 8);
+  up_lowputs("->");
+  serial_puth(val, 2);
+  up_lowputs("\n");
   return val;
 }
 #endif
@@ -485,7 +572,7 @@ static uint8_t mt6260_getreg8(uint32_t addr)
  *******************************************************************************/
 
 #if defined(CONFIG_MT6260_USBDEV_REGDEBUG) && defined(CONFIG_DEBUG)
-static uint32_t mt6260_getreg16(uint32_t addr)
+static uint16_t mt6260_getreg16(uint32_t addr)
 {
   static uint32_t prevaddr = 0;
   static uint16_t preval = 0;
@@ -505,7 +592,8 @@ static uint32_t mt6260_getreg16(uint32_t addr)
         {
            if (count == 4)
              {
-               lldbg("...\n");
+               //lldbg("...\n");
+               up_lowputs("...\n");
              }
           return val;
         }
@@ -521,7 +609,10 @@ static uint32_t mt6260_getreg16(uint32_t addr)
          {
            /* Yes.. then show how many times the value repeated */
 
-           lldbg("[repeats %d more times]\n", count-3);
+           //lldbg("[repeats %d more times]\n", count-3);
+           up_lowputs("[repeats 0x");
+           serial_puth(count - 3, 8);
+           up_lowputs(" more times]\n");
          }
 
        /* Save the new address, value, and count */
@@ -533,7 +624,11 @@ static uint32_t mt6260_getreg16(uint32_t addr)
 
   /* Show the register value read */
 
-  lldbg("%08x->%04x\n", addr, val);
+  //lldbg("%08x->%04x\n", addr, val);
+  serial_puth(addr, 8);
+  up_lowputs("->");
+  serial_puth(val, 4);
+  up_lowputs("\n");
   return val;
 }
 #endif
@@ -567,7 +662,8 @@ static uint32_t mt6260_getreg32(uint32_t addr)
         {
            if (count == 4)
              {
-               lldbg("...\n");
+               //lldbg("...\n");
+               up_lowputs("...\n");
              }
           return val;
         }
@@ -583,7 +679,10 @@ static uint32_t mt6260_getreg32(uint32_t addr)
          {
            /* Yes.. then show how many times the value repeated */
 
-           lldbg("[repeats %d more times]\n", count-3);
+           //lldbg("[repeats %d more times]\n", count-3);
+           up_lowputs("[repeats 0x");
+           serial_puth(count - 3, 8);
+           up_lowputs(" more times]\n");
          }
 
        /* Save the new address, value, and count */
@@ -595,7 +694,11 @@ static uint32_t mt6260_getreg32(uint32_t addr)
 
   /* Show the register value read */
 
-  lldbg("%08x->%08x\n", addr, val);
+  //lldbg("%08x->%08x\n", addr, val);
+  serial_puth(addr, 8);
+  up_lowputs("->");
+  serial_puth(val, 8);
+  up_lowputs("\n");
   return val;
 }
 #endif
@@ -613,7 +716,11 @@ static void mt6260_putreg8(uint8_t val, uint32_t addr)
 {
   /* Show the register value being written */
 
-  lldbg("%08x<-%02x\n", addr, val);
+  //lldbg("%08x<-%02x\n", addr, val);
+  serial_puth(addr, 8);
+  up_lowputs("<-");
+  serial_puth(val, 2);
+  up_lowputs("\n");
 
   /* Write the value */
 
@@ -634,7 +741,11 @@ static void mt6260_putreg16(uint16_t val, uint32_t addr)
 {
   /* Show the register value being written */
 
-  lldbg("%08x<-%04x\n", addr, val);
+  //lldbg("%08x<-%04x\n", addr, val);
+  serial_puth(addr, 8);
+  up_lowputs("<-");
+  serial_puth(val, 4);
+  up_lowputs("\n");
 
   /* Write the value */
 
@@ -655,7 +766,11 @@ static void mt6260_putreg32(uint32_t val, uint32_t addr)
 {
   /* Show the register value being written */
 
-  lldbg("%08x<-%08x\n", addr, val);
+  //lldbg("%08x<-%08x\n", addr, val);
+  serial_puth(addr, 8);
+  up_lowputs("<-");
+  serial_puth(val, 8);
+  up_lowputs("\n");
 
   /* Write the value */
 
@@ -723,14 +838,14 @@ static void mt6260_rqenqueue(FAR struct mt6260_ep_s *privep,
 
 static int mt6260_ep0write(uint8_t *buf, uint16_t nbytes)
 {
-  uint8_t csr0 = USB_PERCSR0_TXPKTRDY; /* XMT packet ready bit */
+  uint8_t csr0 = USB_CSR0_INPKTRDY; /* XMT packet ready bit */
   uint16_t bytesleft;
   uint16_t nwritten;
 
   if ( nbytes <=  MT6260_EP0MAXPACKET)
     {
       bytesleft = nbytes;
-      csr0     |= USB_PERCSR0_DATAEND; /* Transaction end bit */
+      csr0     |= USB_CSR0_DATAEND; /* Transaction end bit */
     }
   else
     {
@@ -744,7 +859,7 @@ static int mt6260_ep0write(uint8_t *buf, uint16_t nbytes)
       bytesleft--;
     }
 
-  mt6260_putreg8(csr0, MT6260_USB_PERCSR0);
+  mt6260_putreg8(csr0, MT6260_USB_CSR0);
   return nwritten;
 }
 
@@ -768,7 +883,7 @@ static int mt6260_epwrite(uint8_t epphy, uint8_t *buf, uint16_t nbytes)
     }
   mt6260_putreg8(epphy, MT6260_USB_INDEX);
 
-  if (epphy == USB_EP0_SELECT )
+  if (epphy == USB_EP0_SELECT)
     {
       return mt6260_ep0write(buf, nbytes);
     }
@@ -783,11 +898,20 @@ static int mt6260_epwrite(uint8_t epphy, uint8_t *buf, uint16_t nbytes)
   fifo = (volatile uint8_t *)MT6260_USB_FIFO0;
   fifo = fifo + (epphy << 2);
 
-  if (mt6260_getreg8(MT6260_USB_PERTXCSR1) & USB_TXCSR1_FIFOEMP)
+  /* If the FIFO is not empty, queue a transmission and wait for it to empty out. */
+  if (mt6260_getreg8(MT6260_USB_INCSR1) & USB_INCSR1_FIFONOTEMP)
     {
-      mt6260_putreg8(mt6260_getreg8(MT6260_USB_PERTXCSR1) | USB_TXCSR1_TXPKTRDY, MT6260_USB_PERTXCSR1);
-      while (mt6260_getreg8(MT6260_USB_PERTXCSR1) & USB_TXCSR1_TXPKTRDY);
-      mt6260_putreg8((mt6260_getreg8(MT6260_USB_PERTXCSR1) | USB_TXCSR1_FLFIFO), MT6260_USB_PERTXCSR1);
+      /*
+       * The FIFO has data in it.  Set the INPKTRDY bit, which should queue
+       * a transfer, then wait for the INPKTRDY bit to be cleared by the
+       * USB system.
+       */
+      mt6260_putreg8(USB_INCSR1_INPKTRDY, MT6260_USB_INCSR1);
+
+      while (mt6260_getreg8(MT6260_USB_INCSR1) & USB_INCSR1_INPKTRDY);
+
+      mt6260_putreg8((mt6260_getreg8(MT6260_USB_INCSR1) | USB_INCSR1_FLFIFO),
+                  MT6260_USB_INCSR1);
     }
 
   while (bytesleft > 0)
@@ -795,7 +919,8 @@ static int mt6260_epwrite(uint8_t epphy, uint8_t *buf, uint16_t nbytes)
       *fifo = *buf++;
       bytesleft--;
     }
-  mt6260_putreg8(mt6260_getreg8(MT6260_USB_PERTXCSR1) | USB_TXCSR1_TXPKTRDY, MT6260_USB_PERTXCSR1);
+  mt6260_putreg8(mt6260_getreg8(MT6260_USB_INCSR1) | USB_INCSR1_INPKTRDY,
+                  MT6260_USB_INCSR1);
   return ret;
 }
 
@@ -847,9 +972,9 @@ static int mt6260_epread(uint8_t epphy, uint8_t *buf, uint16_t nbytes)
      bytesleft--;
   }
 
-  /* Clear RXPKTRDY bit in PER_RXCSR1 */
+  /* Clear OUTPKTRDY bit in _OUTCSR1 */
 
-  mt6260_putreg8(mt6260_getreg8(MT6260_USB_PERRXCSR1) & ~(USB_PERRXCSR1_RXPKTRDY), MT6260_USB_PERRXCSR1);
+  mt6260_putreg8(mt6260_getreg8(MT6260_USB_OUTCSR1) & ~(USB_OUTCSR1_OUTPKTRDY), MT6260_USB_OUTCSR1);
   return ret;
 }
 
@@ -1011,6 +1136,7 @@ static int mt6260_wrrequest(struct mt6260_ep_s *privep)
         {
           usbtrace(TRACE_COMPLETE(privep->epphy), privreq->req.xfrd);
           privep->txnullpkt = 0;
+          usbtrace(TRACE_COMPLETE(privep->epphy), privreq->req.xfrd);
           mt6260_reqcomplete(privep, OK);
           return OK;
         }
@@ -1221,7 +1347,7 @@ static inline void mt6260_ep0setup(struct mt6260_usbdev_s *priv)
   ep0->in = (ctrl.type & USB_DIR_IN) != 0;
   if ((ctrl.type & USB_REQ_TYPE_MASK) != USB_REQ_TYPE_STANDARD)
     {
-      mt6260_putreg8(USB_PERCSR0_CLRRXRDY, MT6260_USB_PERCSR0);
+      mt6260_putreg8(USB_CSR0_SOUTPKTRDY, MT6260_USB_CSR0);
       mt6260_dispatchrequest(priv, &ctrl);
       return;
     }
@@ -1240,7 +1366,7 @@ static inline void mt6260_ep0setup(struct mt6260_usbdev_s *priv)
          * len:   2; data = status
          */
 
-        mt6260_putreg8(USB_PERCSR0_CLRRXRDY | USB_PERCSR0_DATAEND, MT6260_USB_PERCSR0);
+        mt6260_putreg8(USB_CSR0_SOUTPKTRDY | USB_CSR0_DATAEND, MT6260_USB_CSR0);
         usbtrace(TRACE_INTDECODE(MT6260_TRACEINTID_GETSTATUS), 0);
 
         if (len != 2 || (ctrl.type & USB_REQ_DIR_IN) == 0 || value != 0)
@@ -1288,7 +1414,7 @@ static inline void mt6260_ep0setup(struct mt6260_usbdev_s *priv)
          * len:   zero, data = none
          */
 
-        mt6260_putreg8(USB_PERCSR0_CLRRXRDY | USB_PERCSR0_DATAEND, MT6260_USB_PERCSR0);
+        mt6260_putreg8(USB_CSR0_SOUTPKTRDY | USB_CSR0_DATAEND, MT6260_USB_CSR0);
         usbtrace(TRACE_INTDECODE(MT6260_TRACEINTID_CLEARFEATURE), (uint16_t)ctrl.req);
         if (ctrl.type != USB_REQ_RECIPIENT_ENDPOINT)
           {
@@ -1319,7 +1445,7 @@ static inline void mt6260_ep0setup(struct mt6260_usbdev_s *priv)
          * len:   0; data = none
          */
 
-        mt6260_putreg8(USB_PERCSR0_CLRRXRDY | USB_PERCSR0_DATAEND, MT6260_USB_PERCSR0);
+        mt6260_putreg8(USB_CSR0_SOUTPKTRDY | USB_CSR0_DATAEND, MT6260_USB_CSR0);
         usbtrace(TRACE_INTDECODE(MT6260_TRACEINTID_SETFEATURE), 0);
         if (ctrl.type == USB_REQ_RECIPIENT_DEVICE && value == USB_FEATURE_TESTMODE)
           {
@@ -1350,7 +1476,7 @@ static inline void mt6260_ep0setup(struct mt6260_usbdev_s *priv)
          * len:   0; data = none
          */
 
-        mt6260_putreg8(USB_PERCSR0_CLRRXRDY|USB_PERCSR0_DATAEND, MT6260_USB_PERCSR0);
+        mt6260_putreg8(USB_CSR0_SOUTPKTRDY|USB_CSR0_DATAEND, MT6260_USB_CSR0);
         usbtrace(TRACE_INTDECODE(MT6260_TRACEINTID_SETADDRESS), 0);
         priv->paddr = value & 0xff;
       }
@@ -1369,7 +1495,7 @@ static inline void mt6260_ep0setup(struct mt6260_usbdev_s *priv)
        * len:   descriptor len; data = descriptor
        */
       {
-        mt6260_putreg8(USB_PERCSR0_CLRRXRDY, MT6260_USB_PERCSR0);
+        mt6260_putreg8(USB_CSR0_SOUTPKTRDY, MT6260_USB_CSR0);
         usbtrace(TRACE_INTDECODE(MT6260_TRACEINTID_GETSETDESC), 0);
         mt6260_dispatchrequest(priv, &ctrl);
       }
@@ -1400,7 +1526,7 @@ static inline void mt6260_ep0setup(struct mt6260_usbdev_s *priv)
        * len:   0; data = none
        */
       {
-        mt6260_putreg8(USB_PERCSR0_CLRRXRDY|USB_PERCSR0_DATAEND, MT6260_USB_PERCSR0);
+        mt6260_putreg8(USB_CSR0_SOUTPKTRDY|USB_CSR0_DATAEND, MT6260_USB_CSR0);
         usbtrace(TRACE_INTDECODE(MT6260_TRACEINTID_GETSETIFCONFIG), 0);
         mt6260_dispatchrequest(priv, &ctrl);
       }
@@ -1414,14 +1540,14 @@ static inline void mt6260_ep0setup(struct mt6260_usbdev_s *priv)
          * len:   2; data = frame number
          */
 
-        mt6260_putreg8(USB_PERCSR0_CLRRXRDY|USB_PERCSR0_SENDST, MT6260_USB_PERCSR0);
+        mt6260_putreg8(USB_CSR0_SOUTPKTRDY|USB_CSR0_SENDSTALL, MT6260_USB_CSR0);
         usbtrace(TRACE_INTDECODE(MT6260_TRACEINTID_SYNCHFRAME), 0);
       }
       break;
 
     default:
       {
-        mt6260_putreg8(USB_PERCSR0_CLRRXRDY|USB_PERCSR0_SENDST, MT6260_USB_PERCSR0);
+        mt6260_putreg8(USB_CSR0_SOUTPKTRDY|USB_CSR0_SENDSTALL, MT6260_USB_CSR0);
         usbtrace(TRACE_DEVERROR(MT6260_TRACEERR_STALLEDREQUEST), ctrl.req);
         priv->stalled = 1;
       }
@@ -1439,28 +1565,22 @@ static inline void mt6260_ep0setup(struct mt6260_usbdev_s *priv)
 
 static inline uint32_t mt6260_highestpriinterrupt(int intstatus)
 {
-  if ((intstatus & USB_INT_CONNECTED) != 0)
-    return USB_INT_CONNECTED;
-  if ((intstatus & USB_INT_DISCONNECTED) != 0)
-    return USB_INT_DISCONNECTED;
+  if ((intstatus & USB_INT_POWERDOWN) != 0)
+    return USB_INT_POWERDOWN;
   if ((intstatus & USB_INT_RESET) != 0)
     return USB_INT_RESET;
   if ((intstatus & USB_INT_RESUME) != 0)
     return USB_INT_RESUME;
-  if ((intstatus & USB_INT_SESSRQ) != 0)
-    return USB_INT_SESSRQ;
-  if ((intstatus & USB_INT_VBUSERR) != 0)
-    return USB_INT_VBUSERR;
   if ((intstatus & USB_INT_SOF) != 0)
     return USB_INT_SOF;
   if ((intstatus & USB_INT_SUSPEND) != 0)
     return USB_INT_SUSPEND;
   if ((intstatus & USB_INT_CONTROL) != 0)
     return USB_INT_CONTROL;
-  if ((intstatus & USB_INT_RXFIFO) != 0)
-    return USB_INT_RXFIFO;
-  if ((intstatus & USB_INT_TXFIFO) != 0)
-    return USB_INT_TXFIFO;
+  if ((intstatus & USB_INT_OUTFIFO) != 0)
+    return USB_INT_OUTFIFO;
+  if ((intstatus & USB_INT_INFIFO) != 0)
+    return USB_INT_INFIFO;
 
   return USB_INT_NOINTERRUPT;
 }
@@ -1480,16 +1600,19 @@ static int mt6260_ctlrinterrupt(int irq, FAR void *context)
   uint32_t intstatus;
   uint32_t priorityint;
   uint8_t csr0;
+  uint8_t intrin, introut, intrusb;
 
   usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_USBCTLR), 0);
 
+  intrin  = mt6260_getreg8(MT6260_USB_INTRIN);
+  introut = mt6260_getreg8(MT6260_USB_INTROUT);
+  intrusb = mt6260_getreg8(MT6260_USB_INTRUSB);
   /* Combine interretup registers into one interrupt status value */
+  intstatus  = (((uint32_t)intrin  << 12) & 0x01f000)
+             | (((uint32_t)introut <<  8) & 0x000f00)
+             | (((uint32_t)intrusb <<  0) & 0x0000ff);
 
-  intstatus  = ((uint32_t)mt6260_getreg8(MT6260_USB_INTRTX1) << 12) |
-               (((uint32_t)mt6260_getreg8(MT6260_USB_INTRRX1) >> 1) << 8) |
-               (uint32_t)mt6260_getreg8(MT6260_USB_INTRUSB);
   /* Then process each interrupt source, highest priority first */
-
   do
     {
       priorityint = mt6260_highestpriinterrupt(intstatus);
@@ -1500,16 +1623,8 @@ static int mt6260_ctlrinterrupt(int irq, FAR void *context)
           priv->paddrset = 0;
           break;
 
-        case USB_INT_SESSRQ:
-          usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_SESSRQ), 0);
-          break;
-
-        case USB_INT_VBUSERR:
-          usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_VBUSERR), 0);
-          break;
-
-        case USB_INT_CONNECTED:
-          usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_CONNECTED), 0);
+        case USB_INT_POWERDOWN:
+          usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_POWERDOWN), 0);
           break;
 
         case USB_INT_RESUME:
@@ -1524,7 +1639,7 @@ static int mt6260_ctlrinterrupt(int irq, FAR void *context)
 
             /* Check for a response complete interrupt */
 
-            csr0 = mt6260_getreg8(MT6260_USB_PERCSR0);
+            csr0 = mt6260_getreg8(MT6260_USB_CSR0);
             usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_CONTROL), csr0);
             if (csr0 == 0x00)
               {
@@ -1538,39 +1653,39 @@ static int mt6260_ctlrinterrupt(int irq, FAR void *context)
                   }
               }
 
-            if ((csr0 & USB_PERCSR0_RXPKTRDY) != 0)
+            if ((csr0 & USB_CSR0_OUTPKTRDY) != 0)
               {
-                usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_RXPKTRDY), csr0);
+                usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_OUTPKTRDY), csr0);
                 (void)mt6260_getreg8(MT6260_USB_COUNT0);
                 mt6260_ep0setup(priv);
               }
-            else if ((csr0 & USB_PERCSR0_SENTST) != 0)
+            else if ((csr0 & USB_CSR0_SENTSTALL) != 0)
               {
-                usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_TXFIFOSTALL), csr0);
-                mt6260_putreg8(0, MT6260_USB_PERCSR0);
+                usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_INFIFOSTALL), csr0);
+                mt6260_putreg8(0, MT6260_USB_CSR0);
               }
-            else if ((csr0 & USB_PERCSR0_SETEND) != 0)
+            else if ((csr0 & USB_CSR0_SETUPEND) != 0)
               {
-                usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_TXFIFOSETEND), csr0);
-                mt6260_putreg8(USB_PERCSR0_CLRSETEND, MT6260_USB_PERCSR0);
+                usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_INFIFOSETEND), csr0);
+                mt6260_putreg8(USB_CSR0_SSETUPEND, MT6260_USB_CSR0);
               }
-            else if ((csr0 & USB_PERCSR0_TXPKTRDY) != 0)
+            else if ((csr0 & USB_CSR0_INPKTRDY) != 0)
               {
-                usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_TXPKTRDY), csr0);
+                usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_INPKTRDY), csr0);
               }
             else
               {
                 /* Now ignore these unknown interrupts */
 
-                mt6260_putreg8(USB_PERCSR0_CLRRXRDY | USB_PERCSR0_DATAEND, MT6260_USB_PERCSR0);
+                mt6260_putreg8(USB_CSR0_SOUTPKTRDY | USB_CSR0_DATAEND, MT6260_USB_CSR0);
                 usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_UNKNOWN), csr0);
               }
           }
           break;
 
-        case USB_INT_RXFIFO:
+        case USB_INT_OUTFIFO:
           {
-            usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_RXFIFO), 0);
+            usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_OUTFIFO), 0);
             privep =  &priv->eplist[MT6260_EPBULKOUT];
             if (!mt6260_rqempty(privep))
               {
@@ -1584,15 +1699,15 @@ static int mt6260_ctlrinterrupt(int irq, FAR void *context)
           }
           break;
 
-        case USB_INT_TXFIFO:
+        case USB_INT_INFIFO:
           {
-            usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_TXFIFO), 0);
+            usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_INFIFO), 0);
 #ifdef PIPE_STALL
             mt6260_putreg8(MT6260_EPBULKIN, MT6260_USB_INDEX);
-            if (mt6260_getreg8(MT6260_USB_PERTXCSR1) & USB_TXCSR1_SENTST)
+            if (mt6260_getreg8(MT6260_USB_INCSR1) & USB_INCSR1_SENTST)
               {
-                mt6260_putreg8(mt6260_getreg8(MT6260_USB_PERTXCSR1) & ~USB_TXCSR1_SENTST, MT6260_USB_PERTXCSR1);
-                mt6260_putreg8(mt6260_getreg8(MT6260_USB_PERTXCSR1) & ~USB_TXCSR1_SENDST, MT6260_USB_PERTXCSR1);
+                mt6260_putreg8(mt6260_getreg8(MT6260_USB_INCSR1) & ~USB_INCSR1_SENTST, MT6260_USB_INCSR1);
+                mt6260_putreg8(mt6260_getreg8(MT6260_USB_INCSR1) & ~USB_INCSR1_SENDST, MT6260_USB_INCSR1);
               }
 #endif
             if (priv->usbdev.speed == USB_SPEED_UNKNOWN)
@@ -1608,12 +1723,9 @@ static int mt6260_ctlrinterrupt(int irq, FAR void *context)
           }
           break;
 
+          /* Ignore Start-of-Frame IRQs */
         case USB_INT_SOF:
           usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_SOF), 0);
-          break;
-
-        case USB_INT_DISCONNECTED:
-          usbtrace(TRACE_INTENTRY(MT6260_TRACEINTID_DISCONNECTED), 0);
           break;
 
         case USB_INT_SUSPEND:
@@ -1640,6 +1752,7 @@ static int mt6260_ctlrinterrupt(int irq, FAR void *context)
  *
  *******************************************************************************/
 
+#if 0
 static int mt6260_attachinterrupt(int irq, FAR void *context)
 {
   struct mt6260_usbdev_s *priv = &g_usbdev;
@@ -1663,9 +1776,9 @@ static int mt6260_attachinterrupt(int irq, FAR void *context)
           priv->attached = 0;
 
           mt6260_putreg16(mt6260_getreg16(MT6260_CLKC_LPCTL1) | 0x0010, MT6260_CLKC_LPCTL1);
-          if ((mt6260_getreg8(MT6260_USB_PERTXCSR1) & USB_TXCSR1_FIFOEMP))
+          if ((mt6260_getreg8(MT6260_USB_INCSR1) & USB_INCSR1_FIFOEMP))
             {
-              mt6260_putreg8(USB_TXCSR1_FLFIFO, MT6260_USB_PERTXCSR1);
+              mt6260_putreg8(USB_INCSR1_FLFIFO, MT6260_USB_INCSR1);
               up_mdelay(5);
             }
         }
@@ -1689,6 +1802,7 @@ static int mt6260_attachinterrupt(int irq, FAR void *context)
     }
   return OK;
 }
+#endif
 
 /*******************************************************************************
  * Name: mt6260_epreset
@@ -1697,9 +1811,18 @@ static int mt6260_attachinterrupt(int irq, FAR void *context)
 static void mt6260_epreset(unsigned int index)
 {
   mt6260_putreg8(index, MT6260_USB_INDEX);
-  mt6260_putreg8(USB_PERCSR0_CLRSETEND | USB_PERCSR0_CLRRXRDY, MT6260_USB_PERCSR0);
-  mt6260_putreg8(USB_CSR2_FLFIFO, MT6260_USB_CSR2);
-  mt6260_putreg8(USB_CSR2_FLFIFO, MT6260_USB_CSR2);
+
+  if (index) {
+    mt6260_putreg8(USB_OUTCSR1_CLRDATTOG | USB_OUTCSR1_FLFIFO, MT6260_USB_OUTCSR1);
+    mt6260_putreg8(USB_OUTCSR1_CLRDATTOG | USB_OUTCSR1_FLFIFO, MT6260_USB_OUTCSR1);
+
+    mt6260_putreg8(USB_INCSR1_FLFIFO | USB_INCSR1_CLRDATTOG, MT6260_USB_INCSR1);
+    mt6260_putreg8(USB_INCSR1_FLFIFO | USB_INCSR1_CLRDATTOG, MT6260_USB_INCSR1);
+  }
+  else { /* EP0 */
+    /* EP0 can't be reset?!? */
+    mt6260_putreg8(USB_CSR0_SSETUPEND | USB_CSR0_SOUTPKTRDY, MT6260_USB_CSR0);
+  }
 }
 
 /*******************************************************************************
@@ -1712,41 +1835,25 @@ static void mt6260_epreset(unsigned int index)
 
 static inline void mt6260_epinitialize(struct mt6260_usbdev_s *priv)
 {
-  uint16_t  offset;     /* Full USB buffer offset */
-  uint8_t addrhi;     /* MS bytes of ofset */
-  uint8_t addrlo;     /* LS bytes of offset */
   int     i;
 
   /* Initialize endpoint 0 */
 
   mt6260_putreg8(USB_EP0_SELECT, MT6260_USB_INDEX);
-  mt6260_putreg8(USB_PERCSR0_CLRSETEND|USB_PERCSR0_CLRRXRDY, MT6260_USB_PERCSR0);
-  mt6260_putreg8(USB_CSR2_FLFIFO, MT6260_USB_CSR2);
-  mt6260_putreg8(USB_CSR2_FLFIFO, MT6260_USB_CSR2);
-
-  /* EP0 Fifo size/address (ofset == 0) */
-
-  mt6260_putreg8(0x00, MT6260_USB_TXFIFO1);
-  mt6260_putreg8(0x00, MT6260_USB_RXFIFO1);
-  mt6260_putreg8(g_epinfo[0].fifo, MT6260_USB_TXFIFO2);
-  mt6260_putreg8(USB_TXFIFO2_SZ_64, MT6260_USB_RXFIFO2);
+  mt6260_putreg8(USB_CSR0_SSETUPEND|USB_CSR0_SOUTPKTRDY, MT6260_USB_CSR0);
 
   /* EP0 max packet size */
 
-  mt6260_putreg8(g_epinfo[0].maxpacket >> 3, MT6260_USB_TXMAXP);
-  mt6260_putreg8(g_epinfo[0].maxpacket >> 3, MT6260_USB_RXMAXP);
+  mt6260_putreg8(g_epinfo[0].maxpacket, MT6260_USB_INMAXP);
+  mt6260_putreg8(g_epinfo[0].maxpacket, MT6260_USB_OUTMAXP);
 
   /* Setup bulk-in, bulk-out, iso-in, iso-out, and intr endpoints using the
    * g_epinfo[] array.
    */
 
-  offset = MT6260_EP0MAXPACKET;      /* move to next buffer position */
   for (i = 1; i < MT6260_NENDPOINTS; i++)
     {
       mt6260_putreg8(g_epinfo[i].addr & 0x0f, MT6260_USB_INDEX);
-
-      addrlo = (offset >> 8) & 0xff;
-      addrhi = (offset >= 2048) ? 1 : 0;
 
       /* Configure IN endpoints (device-to-host) */
 
@@ -1754,19 +1861,16 @@ static inline void mt6260_epinitialize(struct mt6260_usbdev_s *priv)
         {
           /* Initialize TX endpoint */
 
-          mt6260_putreg8(USB_TXCSR1_CLRDATTOG|USB_TXCSR1_FLFIFO|USB_TXCSR1_UNDERRUN,
-                  MT6260_USB_PERTXCSR1);
-          mt6260_putreg8(USB_TXCSR1_FLFIFO, MT6260_USB_PERTXCSR1);
-          mt6260_putreg8(USB_TXCSR2_FRDATTOG|USB_TXCSR2_MODE_TX, MT6260_USB_TXCSR2);
+          mt6260_putreg8(USB_INCSR1_CLRDATTOG|USB_INCSR1_FLFIFO,
+                  MT6260_USB_INCSR1);
+          mt6260_putreg8(USB_INCSR1_FLFIFO, MT6260_USB_INCSR1);
+          mt6260_putreg8(USB_INCSR2_FRDATTOG|USB_INCSR2_MODE_IN, MT6260_USB_INCSR2);
 
           /* FIFO address, max packet size, dual/single buffered */
 
-          mt6260_putreg8(addrlo, MT6260_USB_TXFIFO1);
-          mt6260_putreg8(addrhi|g_epinfo[i].fifo, MT6260_USB_TXFIFO2);
-
           /* TX endpoint max packet size */
 
-          mt6260_putreg8(g_epinfo[i].maxpacket >> 3, MT6260_USB_TXMAXP);
+          mt6260_putreg8(g_epinfo[i].maxpacket, MT6260_USB_INMAXP);
         }
 
       /* Configure OUT endpoints (host-to-device) */
@@ -1775,21 +1879,16 @@ static inline void mt6260_epinitialize(struct mt6260_usbdev_s *priv)
         {
           /* Initialize RX endpoint */
 
-          mt6260_putreg8(USB_PERRXCSR1_CLRDATTOG|USB_PERRXCSR1_FLFIFO,
-                  MT6260_USB_PERRXCSR1);
-          mt6260_putreg8(USB_PERRXCSR1_FLFIFO, MT6260_USB_PERRXCSR1);
-          mt6260_putreg8(0x00, MT6260_USB_PERRXCSR2);
+          mt6260_putreg8(USB_OUTCSR1_CLRDATTOG|USB_OUTCSR1_FLFIFO,
+                  MT6260_USB_OUTCSR1);
+          mt6260_putreg8(USB_OUTCSR1_FLFIFO, MT6260_USB_OUTCSR1);
+          mt6260_putreg8(0x00, MT6260_USB_OUTCSR2);
 
-          /* FIFO address, max packet size, dual/single buffered */
-
-          mt6260_putreg8(addrhi, MT6260_USB_RXFIFO1);
-          mt6260_putreg8(addrhi|g_epinfo[i].fifo | USB_RXFIF02_DPB, MT6260_USB_RXFIFO2);
 
           /* RX endpoint max packet size */
 
-          mt6260_putreg8(g_epinfo[i].maxpacket >> 3, MT6260_USB_RXMAXP);
+          mt6260_putreg8(g_epinfo[i].maxpacket, MT6260_USB_OUTMAXP);
         }
-      offset += g_epinfo[i].maxpacket;
     }
 }
 
@@ -1804,18 +1903,6 @@ static inline void mt6260_epinitialize(struct mt6260_usbdev_s *priv)
 static void mt6260_ctrlinitialize(FAR struct mt6260_usbdev_s *priv)
 {
   /* Setup the USB controller for operation as a periperhal *******************/
-  /* Enable USB clock */
-
-  mt6260_putreg16(mt6260_getreg16(MT6260_CLKC_MOD2) | 0x0060, MT6260_CLKC_MOD2);
-
-  /* Disable USB Power down mode */
-
-  mt6260_putreg16(mt6260_getreg16(MT6260_CLKC_LPCTL1) & 0xFFEF, MT6260_CLKC_LPCTL1);
-
-  /* Put USB controller in peripheral mode */
-
-  mt6260_putreg32(0x00000000, MT6260_AHB_USBCTL);
-  mt6260_putreg8(USB_DEVCTL_SESSREQ, MT6260_USB_DEVCTL);
 
   /* Reset USB controller registers */
 
@@ -1824,19 +1911,18 @@ static void mt6260_ctrlinitialize(FAR struct mt6260_usbdev_s *priv)
 
   /* Initialize interrupts *****************************************************/
 
-  up_maskack_irq(MT6260_IRQ_USB0);      /* Clear USB controller interrupt */
-  up_maskack_irq(MT6260_IRQ_USB1);      /* Clear USB DMA interrupt flag */
+  up_maskack_irq(MT6260_IRQ_USB);      /* Clear USB controller interrupt */
 
-  mt6260_getreg8(MT6260_USB_INTRTX1);          /* Clear TX interrupt */
-  mt6260_getreg8(MT6260_USB_INTRRX1);          /* Clear RX interrupt */
-  mt6260_getreg8(MT6260_USB_INTRUSB);          /* Clear control interrupt */
-  mt6260_getreg8(MT6260_USB_DMAINTR);
+  mt6260_getreg8(MT6260_USB_INTRIN);   /* Clear TX interrupt */
+  mt6260_getreg8(MT6260_USB_INTROUT);  /* Clear RX interrupt */
+  mt6260_getreg8(MT6260_USB_INTRUSB);  /* Clear control interrupt */
+  mt6260_getreg8(MT6260_USB_DUMMY);    /* This seems necessary */
 
   /* Enable USB interrupts */
 
-  mt6260_putreg8((MT6260_EPBULKIN << 1), MT6260_USB_INTRRX1E);
-  mt6260_putreg8((MT6260_EPBULKOUT << 1) | USB_EP0, MT6260_USB_INTRTX1E);
-  mt6260_putreg8(USB_INT_RESET|USB_INT_RESUME|USB_INT_SUSPEND|USB_INT_SESSRQ|USB_INT_SOF,
+  mt6260_putreg8((1 << MT6260_EPBULKOUT), MT6260_USB_INTROUTE);
+  mt6260_putreg8((1 << MT6260_EPBULKIN) | (1 << MT6260_EP0), MT6260_USB_INTRINE);
+  mt6260_putreg8(USB_INT_RESET|USB_INT_RESUME|USB_INT_SUSPEND|USB_INT_POWERDOWN,
           MT6260_USB_INTRUSBE);
 
   /* Initialize endpoints ******************************************************/
@@ -2055,7 +2141,7 @@ static int mt6260_epsubmit(FAR struct usbdev_ep_s *ep, FAR struct usbdev_req_s *
   if (req->len == 0 && (privep->in || privep->epphy == 3))
     {
       usbtrace(TRACE_DEVERROR(MT6260_TRACEERR_NULLPACKET), 0);
-      mt6260_putreg8(mt6260_getreg8(MT6260_USB_PERTXCSR1) | USB_TXCSR1_TXPKTRDY, MT6260_USB_PERTXCSR1);
+      mt6260_putreg8(USB_INCSR1_INPKTRDY, MT6260_USB_INCSR1);
       mt6260_abortrequest(privep, privreq, OK);
     }
 
@@ -2122,7 +2208,7 @@ static int mt6260_epsubmit(FAR struct usbdev_ep_s *ep, FAR struct usbdev_req_s *
 static int mt6260_epcancel(struct usbdev_ep_s *ep, FAR struct usbdev_req_s *req)
 {
   FAR struct mt6260_ep_s *privep = (FAR struct mt6260_ep_s *)ep;
-  FAR struct mt6260_usbdev_s *priv;
+  //FAR struct mt6260_usbdev_s *priv;
   irqstate_t flags;
 
 #ifdef CONFIG_DEBUG
@@ -2133,7 +2219,7 @@ static int mt6260_epcancel(struct usbdev_ep_s *ep, FAR struct usbdev_req_s *req)
     }
 #endif
   usbtrace(TRACE_EPCANCEL, privep->epphy);
-  priv = privep->dev;
+  //priv = privep->dev;
 
   flags = irqsave();
   mt6260_cancelrequests(privep);
@@ -2318,7 +2404,6 @@ static int mt6260_selfpowered(struct usbdev_s *dev, bool selfpowered)
  *
  *******************************************************************************/
 
-#ifdef CONFIG_MT6260_GIO_USBDPPULLUP
 static int mt6260_pullup(struct usbdev_s *dev, bool enable)
 {
   irqstate_t flags;
@@ -2328,17 +2413,20 @@ static int mt6260_pullup(struct usbdev_s *dev, bool enable)
   flags = irqsave();
   if (enable)
     {
-      GIO_SET_OUTPUT(CONFIG_MT6260_GIO_USBDPPULLUP); /* Set D+ pullup */
+      /* Set D+ pullup */
+      mt6260_putreg8(mt6260_getreg8(MT6260_USB_PHYCTRL) | (USB_PHY_DPPULLUP | USB_PHY_TOF),
+            MT6260_USB_PHYCTRL);
     }
   else
     {
-      GIO_CLEAR_OUTPUT(CONFIG_MT6260_GIO_USBDPPULLUP); /* Clear D+ pullup */
+      /* Clear D+ pullup */
+      mt6260_putreg8(mt6260_getreg8(MT6260_USB_PHYCTRL) & ~(USB_PHY_DPPULLUP | USB_PHY_TOF),
+            MT6260_USB_PHYCTRL);
     }
 
   irqrestore(flags);
   return OK;
 }
-#endif
 
 /*******************************************************************************
  * Public Functions
@@ -2356,9 +2444,6 @@ void up_usbinitialize(void)
 {
   struct mt6260_usbdev_s *priv = &g_usbdev;
   struct mt6260_ep_s *privep;
-#ifdef CONFIG_DEBUG_USB
-  uint16_t chiprev;
-#endif
   int i;
 
   usbtrace(TRACE_DEVINIT, 0);
@@ -2368,40 +2453,38 @@ void up_usbinitialize(void)
   memset(priv, 0, sizeof(struct mt6260_usbdev_s));
   priv->usbdev.ops = &g_devops;
 
-#ifdef CONFIG_DEBUG_USB
-  chiprev = mt6260_getreg16(MT6260_BUSC_REVR);
-  ulldbg("MT6260 revision : %d.%d\n", chiprev >> 4, chiprev & 0x0f);
-#endif
+/* Power up USB */
 
-  /* Enable USB clock & GIO clock  */
+  /* Clear powerdown */
+  mt6260_putreg32(4, 0xA0010000 + 0x0324);
 
-  mt6260_putreg16(mt6260_getreg16(MT6260_CLKC_MOD2) | 0x0060, MT6260_CLKC_MOD2);
-  mt6260_putreg16(mt6260_getreg16(MT6260_CLKC_DIV4) | (((4) - 1) << 8) | ((1) - 1), MT6260_CLKC_DIV4);
+  /* Reset PHY */
 
-  /* Initialize  D+ pullup control GIO */
+  mt6260_putreg32(mt6260_getreg32(MT6260_USBPHY_CSR1) & ~USBPHY_CSR1_REV7,
+      MT6260_USBPHY_CSR1);
 
-  GIO_OUTPUT(CONFIG_MT6260_GIO_USBDPPULLUP);
-  GIO_SET_OUTPUT(CONFIG_MT6260_GIO_USBDPPULLUP);
+  /* Force full speed / low speed mode */
+  mt6260_putreg32(mt6260_getreg32(MT6260_USBPHY_CSR0) | USBPHY_CSR0_FORCE_FSLS,
+      MT6260_USBPHY_CSR0);
+  up_mdelay(1);
 
-  /* Initilialize USB attach GIO */
+  /* Dummy read required before PHY access */
+  mt6260_getreg8(MT6260_USB_DUMMY);
+  mt6260_putreg32(mt6260_getreg32(MT6260_USBPHY_CSR0) | USBPHY_CSR0_RESET,
+      MT6260_USBPHY_CSR0);
+  mt6260_putreg32(mt6260_getreg32(MT6260_USBPHY_CSR0) & ~USBPHY_CSR0_RESET,
+      MT6260_USBPHY_CSR0);
 
-  GIO_INTERRUPT(CONFIG_MT6260_GIO_USBATTACH);
-  GIO_BOTHEDGES(CONFIG_MT6260_GIO_USBATTACH);
-  mt6260_putreg16(mt6260_getreg16(MT6260_GIO_CHAT0) | (1 << CONFIG_MT6260_GIO_USBATTACH), MT6260_GIO_CHAT0);
-
-  /* Attach host attach GIO interrupt */
-
-  if (irq_attach(IRQ_USBATTACH, mt6260_attachinterrupt) != 0)
-    {
-      usbtrace(TRACE_DEVERROR(MT6260_TRACEERR_ATTACHIRQREG), 0);
-      goto errout;
-    }
+  /* Reset MAC */
+  mt6260_putreg8(USB_RESET_SWRST, MT6260_USB_RESET);
+  mt6260_putreg8(0, MT6260_USB_RESET);
+  mt6260_putreg8(USB_POWER_SWRSTENAB | USB_POWER_ENSUS, MT6260_USB_POWER);
 
   /* Attach USB controller core interrupt handler -- interrupts will be
    * enabled when the driver is bound
    */
 
-  if (irq_attach(MT6260_IRQ_USB1, mt6260_ctlrinterrupt) != 0)
+  if (irq_attach(MT6260_IRQ_USB, mt6260_ctlrinterrupt) != 0)
     {
       usbtrace(TRACE_DEVERROR(MT6260_TRACEERR_COREIRQREG), 0);
       goto errout;
@@ -2432,9 +2515,14 @@ void up_usbinitialize(void)
       /* Setup the endpoint-specific stuff */
 
       priv->eplist[i].ep.maxpacket = g_epinfo[i].maxpacket;
-      if (USB_EPIN(g_epinfo[i].addr))
+      if ((i == 1) || (i == 3))
+//      if (USB_EPIN(g_epinfo[i].addr))
         {
           priv->eplist[i].in = 1;
+        }
+      else
+        {
+          priv->eplist[i].in = 0;
         }
 
       /* Reset the endpoint */
@@ -2446,9 +2534,6 @@ void up_usbinitialize(void)
 
   priv->usbdev.ep0 = &priv->eplist[0].ep;
 
-  /* For 'B' device initiate session request protocol */
-
-  mt6260_putreg8(USB_DEVCTL_SESSREQ, MT6260_USB_DEVCTL);
   return;
 
 errout:
@@ -2471,15 +2556,12 @@ void up_usbuninitialize(void)
     }
 
   priv->usbdev.speed = USB_SPEED_UNKNOWN;
-  mt6260_putreg16(mt6260_getreg16(MT6260_CLKC_LPCTL1) | 0x0010, MT6260_CLKC_LPCTL1);
 
   /* Disable and detach IRQs */
 
-  up_disable_irq(IRQ_USBATTACH);
-  up_disable_irq(MT6260_IRQ_USB1);
+  up_disable_irq(MT6260_IRQ_USB);
 
-  irq_detach(IRQ_USBATTACH);
-  irq_detach(MT6260_IRQ_USB1);
+  irq_detach(MT6260_IRQ_USB);
 }
 
 /************************************************************************************
@@ -2514,7 +2596,7 @@ int usbdev_register(FAR struct usbdevclass_driver_s *driver)
 
   /* Hook up the driver */
 
- g_usbdev.driver = driver;
+  g_usbdev.driver = driver;
 
   /* Then bind the class driver */
 
@@ -2529,14 +2611,26 @@ int usbdev_register(FAR struct usbdevclass_driver_s *driver)
   /* Enable host detection and ep0 RX/TX */
 
   mt6260_epreset(0);
-  mt6260_putreg8(USB_EP0, MT6260_USB_INTRTX1E);
-  mt6260_putreg8(USB_INT_RESET|USB_INT_RESUME|USB_INT_SUSPEND|USB_INT_SESSRQ|USB_INT_SOF,
+  mt6260_putreg8(USB_EP0, MT6260_USB_INTRINE);
+  mt6260_putreg8(USB_INT_RESET|USB_INT_RESUME|USB_INT_SUSPEND|USB_INT_SOF,
           MT6260_USB_INTRUSBE);
 
-  /* Enable interrupts */
+  /* Simulate /reconnect */
+  {
+    struct mt6260_usbdev_s *priv = &g_usbdev;
+    usbtrace(TRACE_INTDECODE(MT6260_TRACEINTID_ATTACHED), 0);
 
-  up_enable_irq(IRQ_USBATTACH);
-  up_enable_irq(MT6260_IRQ_USB1);
+    mt6260_ctrlinitialize(priv);
+
+    priv->usbdev.speed  = USB_SPEED_UNKNOWN;
+    priv->paddrset      = 0;
+    priv->paddr         = 0;
+    priv->attached      = 1;
+  }
+
+  /* Enable interrupts */
+  up_enable_irq(MT6260_IRQ_USB);
+
   return OK;
 }
 
@@ -2568,13 +2662,10 @@ int usbdev_unregister(FAR struct usbdevclass_driver_s *driver)
 
   /* Disable IRQs */
 
-  up_disable_irq(IRQ_USBATTACH);
-  up_disable_irq(MT6260_IRQ_USB1);
+  up_disable_irq(MT6260_IRQ_USB);
 
   /* Unhook the driver */
 
   g_usbdev.driver = NULL;
   return OK;
 }
-
-

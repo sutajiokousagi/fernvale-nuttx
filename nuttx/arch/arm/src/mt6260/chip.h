@@ -41,13 +41,9 @@
  ******************************************************************************/
 
 #include "mt6260_memorymap.h"
-#include "mt6260_clkc.h"
-#include "mt6260_ahb.h"
-#include "mt6260_busc.h"
 #include "mt6260_uart.h"
 #include "mt6260_timer.h"
 #include "mt6260_intc.h"
-#include "mt6260_gio.h"
 #include "mt6260_usb.h"
 
 /******************************************************************************

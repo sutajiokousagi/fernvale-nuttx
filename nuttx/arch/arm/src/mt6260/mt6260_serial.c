@@ -135,7 +135,7 @@ static char g_uart1txbuffer[CONFIG_UART1_TXBUFSIZE];
 
 static struct up_dev_s g_uart0priv =
 {
-  .uartbase       = MT6260_UART0_REGISTER_BASE,
+  .uartbase       = MT6260_UART0_VADDR,
   .baud           = CONFIG_UART0_BAUD,
   .irq            = MT6260_IRQ_UART0,
   .parity         = CONFIG_UART0_PARITY,
@@ -163,7 +163,7 @@ static uart_dev_t g_uart0port =
 
 static struct up_dev_s g_uart1priv =
 {
-  .uartbase       = MT6260_UART1_REGISTER_BASE,
+  .uartbase       = MT6260_UART1_VADDR,
   .baud           = CONFIG_UART1_BAUD,
   .irq            = MT6260_IRQ_UART1,
   .parity         = CONFIG_UART1_PARITY,
@@ -528,6 +528,11 @@ static int up_interrupt(int irq, void *context)
           uart_xmitchars(dev);
         }
 
+      else if (status == UART_IIR_ID_RXTIMEOUT)
+        {
+          uart_recvchars(dev);
+        }
+
       else
         {
           lowsyslog("ISR: Unrecognized status: 0x%x\n", status);
@@ -742,8 +747,12 @@ void up_earlyserialinit(void)
   up_disableuartint(TTYS0_DEV.priv, NULL);
   up_disableuartint(TTYS1_DEV.priv, NULL);
 
+#ifdef CONFIG_DEV_CONSOLE
+#ifndef CONFIG_NO_SERIAL_CONSOLE
   CONSOLE_DEV.isconsole = true;
   up_setup(&CONSOLE_DEV);
+#endif
+#endif
 }
 
 /****************************************************************************
@@ -757,7 +766,11 @@ void up_earlyserialinit(void)
 
 void up_serialinit(void)
 {
+#ifdef CONFIG_DEV_CONSOLE
+#ifndef CONFIG_NO_SERIAL_CONSOLE
   (void)uart_register("/dev/console", &CONSOLE_DEV);
+#endif
+#endif
   (void)uart_register("/dev/ttyS0", &TTYS0_DEV);
   (void)uart_register("/dev/ttyS1", &TTYS1_DEV);
 }
@@ -802,9 +815,9 @@ int up_putc(int ch)
  ****************************************************************************/
 
 #  ifdef CONFIG_UART1_SERIAL_CONSOLE
-#    define MT6260_REGISTER_BASE MT6260_UART1_REGISTER_BASE
+#    define MT6260_VADDR MT6260_UART1_VADDR
 #  else
-#    define MT6260_REGISTER_BASE MT6260_UART0_REGISTER_BASE
+#    define MT6260_VADDR MT6260_UART0_VADDR
 #  endif
 
 /****************************************************************************
@@ -818,7 +831,7 @@ static inline void up_waittxready(void)
   for (tmp = 1000 ; tmp > 0 ; tmp--)
     {
 
-      if ((getreg8(MT6260_REGISTER_BASE + UART_LSR) & UART_LSR_THRE) != 0)
+      if ((getreg8(MT6260_VADDR + UART_LSR) & UART_LSR_THRE) != 0)
         {
           break;
         }
@@ -832,7 +845,7 @@ static inline void up_waittxready(void)
 int up_putc(int ch)
 {
   up_waittxready();
-  putreg8((uint8_t)ch, MT6260_REGISTER_BASE + UART_THR);
+  putreg8((uint8_t)ch, MT6260_VADDR + UART_THR);
 
   /* Check for LF */
 
@@ -841,7 +854,7 @@ int up_putc(int ch)
       /* Add CR */
 
       up_waittxready();
-      putreg8((uint8_t)'\r', MT6260_REGISTER_BASE + UART_THR);
+      putreg8((uint8_t)'\r', MT6260_VADDR + UART_THR);
     }
 
   up_waittxready();
