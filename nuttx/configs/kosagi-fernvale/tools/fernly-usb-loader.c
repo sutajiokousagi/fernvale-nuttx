@@ -14,8 +14,11 @@
 #include "sha1.h"
 
 #define BAUDRATE B921600
-#define WRITE_ALL_AT_ONCE 1 /* Write bootloader in one write() */
-//#define MONITOR_BOOT /* Whether to monitor serial, or call screen */
+#define WRITE_ALL_AT_ONCE 1 /* Write stage 2 in one write() */
+#define MONITOR_BOOT /* Whether to monitor serial, or call screen */
+#define FERNLY_USB_LOADER_ADDR 0x7000c000
+
+#define ASSERT(x) do { if ((x)) exit(1); } while(0)
 
 static const uint32_t mtk_config_offset = 0x80000000;
 
@@ -288,8 +291,8 @@ int fernvale_cmd_jump(int fd, uint32_t addr) {
 	return 0;
 }
 
-int fernvale_cmd_send_file(int fd, uint32_t addr, const char *filename) {
-	int binfd;
+int fernvale_cmd_send_fd(int fd, uint32_t addr, int binfd)
+{
 	struct stat stats;
 	uint16_t checksum, checksum_calc;
 	uint16_t response;
@@ -298,12 +301,6 @@ int fernvale_cmd_send_file(int fd, uint32_t addr, const char *filename) {
 //	uint32_t unk1 = 0x00000001;
 	uint32_t size;
 	uint8_t *bfr;
-
-	binfd = open(filename, O_RDONLY);
-	if (-1 == binfd) {
-		perror("Unable to open file for sending");
-		return -1;
-	}
 
 	if (-1 == fstat(binfd, &stats)) {
 		perror("Unable to get file stats");
@@ -332,10 +329,6 @@ int fernvale_cmd_send_file(int fd, uint32_t addr, const char *filename) {
 	}
 
 	close(binfd);
-
-	printf("%d (0x%x) bytes \"%s\" @ 0x%08x... ", size, size,
-		filename, addr);
-	fflush(stdout);
 
 	fernvale_send_cmd(fd, 0xd7);
 	fernvale_send_int32(fd, addr);
@@ -996,18 +989,167 @@ int fernvale_set_serial(int serfd) {
 	return 0;
 }
 
-static int fernvale_banner(int fd) {
+static int fernvale_wait_banner(int fd) {
 	uint8_t b;
 
-	while (-1 != read(fd, &b, 1)) {
+	while (1 == read(fd, &b, 1)) {
 		if (b == '>')
 			return 0;
-		printf("%c", b);
-		fflush(stdout);
-		if (b == '\n')
-		printf("\t");
+//		printf("%c", b);
+//		fflush(stdout);
+//		if (b == '\n')
+//			printf("\t");
 	}
 	return -1;
+}
+
+static int fernvale_write_stage2(int serfd, int binfd)
+{
+	struct stat stats;
+	unsigned int bytes_to_write;
+	int i;
+
+	if (-1 == fstat(binfd, &stats)) {
+		perror("Unable to get file stats");
+		exit(1);
+	}
+
+	bytes_to_write = stats.st_size;
+	printf("%d bytes... ", bytes_to_write);
+	fflush(stdout);
+	{
+#if 0
+		write(serfd, &bytes_to_write, 4);
+#else
+		uint8_t b;
+
+		b = bytes_to_write & 0xff;
+		write(serfd, &b, 1);
+
+		b = bytes_to_write >> 8 & 0xff;
+		write(serfd, &b, 1);
+
+		b = bytes_to_write >> 16 & 0xff;
+		write(serfd, &b, 1);
+
+		b = bytes_to_write >> 24 & 0xff;
+		write(serfd, &b, 1);
+#endif
+	}
+
+	uint8_t bfr[stats.st_size];
+	read(binfd, bfr, sizeof(bfr));
+
+#if (WRITE_ALL_AT_ONCE)
+	if (write(serfd, bfr, sizeof(bfr)) != sizeof(bfr)) {
+		perror("Unable to write firmware");
+		exit(1);
+	}
+	i = sizeof(bfr);
+#else
+	for (i = 0; i < sizeof(bfr); i++) {
+		printf("%6d / %6d\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", i, (int)sizeof(bfr));
+		if (1 != write(serfd, &bfr[i], 1)) {
+			perror("Unable to write firmware");
+			exit(1);
+		}
+	}
+#endif
+	printf("%6d / %6d ", i, (int)sizeof(bfr));
+
+	return 0;
+}
+
+static int fernvale_write_stage3(int serfd, int binfd)
+{
+	struct stat stats;
+	uint32_t bytes_left, bytes_written, bytes_total;
+	int ret;
+//	char bfr[1024];
+	char cmd[128];
+
+	if (-1 == fstat(binfd, &stats)) {
+		perror("Unable to get file stats");
+		exit(1);
+	}
+
+	bytes_left = snprintf(cmd, sizeof(cmd) - 1,
+			"loadjmp 0 %d\n", (int)stats.st_size);
+	write(serfd, cmd, bytes_left);
+	read(serfd, cmd, sizeof(cmd));
+
+	bytes_left = stats.st_size;
+	bytes_total = stats.st_size;
+	bytes_written = 0;
+
+	printf("%d bytes... ", bytes_total);
+	fflush(stdout);
+
+	char bfr[bytes_total];
+	ret = read(binfd, bfr, sizeof(bfr));
+	if (-1 == ret) {
+		perror("Unable to read data from payload file");
+		return -1;
+	}
+	else if (ret != bytes_total) {
+		fprintf(stderr, "Shortened read (want: %d got: %d)\n",
+				bytes_total, ret);
+		return -1;
+	}
+
+	bytes_written = write(serfd, bfr, sizeof(bfr));
+	if (-1 == ret) {
+		perror("Unable to write data to output");
+		return -1;
+	}
+	else if (bytes_written != bytes_total) {
+		fprintf(stderr, "Shortened write (want: %d got: %d)\n",
+				bytes_total, ret);
+		return -1;
+	}
+
+	/*
+	while (bytes_left) {
+		uint32_t bytes_to_write;
+		
+		bytes_to_write = sizeof(bfr);
+		if (bytes_left < bytes_to_write)
+			bytes_to_write = bytes_left;
+		
+		ret = read(binfd, bfr, bytes_to_write);
+		if (-1 == ret) {
+			perror("Unable to read data from payload file");
+			return -1;
+		}
+		else if (ret != bytes_to_write) {
+			fprintf(stderr, "Shortened read (want: %d got: %d)\n",
+					bytes_to_write, ret);
+			return -1;
+		}
+
+		ret = write(serfd, bfr, bytes_to_write);
+		if (-1 == ret) {
+			perror("Unable to write data to output");
+			return -1;
+		}
+		else if (ret != bytes_to_write) {
+			fprintf(stderr, "Shortened write (want: %d got: %d)\n",
+					bytes_to_write, ret);
+			return -1;
+		}
+
+		bytes_left    -= bytes_to_write;
+		bytes_written += bytes_to_write;
+
+		printf("%6d / %6d\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b",
+				bytes_written, bytes_total);
+		fflush(stdout);
+	}
+	*/
+
+	printf("%6d / %6d ", bytes_written, bytes_total);
+
+	return 0;
 }
 
 static void cmd_begin(const char *msg) {
@@ -1030,11 +1172,18 @@ static void cmd_end_fmt(const char *fmt, ...) {
 }
 
 int main(int argc, char **argv) {
-	int serfd, binfd;
+	int serfd, binfd, s1blfd, payloadfd = -1;
 	uint32_t ret;
 	
-	if (argc != 3) {
-		printf("Usage: %s [serial port] [firmware]\n", argv[0]);
+	if ((argc != 4) && (argc != 5)) {
+		printf("Usage: %s [serial port] "
+				"[stage 1 bootloader] "
+				"[[stage 2 bootloader]]"
+				"[payload]\n", argv[0]);
+		printf("If you don't want a stage 2 bootloader, you may omit "
+			"it, and this program will jump straight to the "
+			"payload, loaded at offset 0x%08x.\n",
+			FERNLY_USB_LOADER_ADDR);
 		exit(1);
 	}
 
@@ -1044,18 +1193,32 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	binfd = open(argv[2], O_RDONLY);
+	s1blfd = open(argv[2], O_RDONLY);
+	if (-1 == s1blfd) {
+		perror("Unable to open stage 1 bootloader");
+		exit(1);
+	}
+
+	binfd = open(argv[3], O_RDONLY);
 	if (-1 == binfd) {
 		perror("Unable to open firmware file");
 		exit(1);
 	}
 
+	if (argc == 5) {
+		payloadfd = open(argv[4], O_RDONLY);
+		if (-1 == payloadfd) {
+			perror("Unable to open payload file");
+			exit(1);
+		}
+	}
+
 	cmd_begin("Setting serial port parameters");
-	fernvale_set_serial(serfd);
+	ASSERT(fernvale_set_serial(serfd));
 	cmd_end();
 
 	cmd_begin("Initiating communication");
-	fernvale_hello(serfd);
+	ASSERT(fernvale_hello(serfd));
 	cmd_end();
 
 	cmd_begin("Getting hardware version");
@@ -1211,77 +1374,35 @@ int main(int argc, char **argv) {
 	fernvale_get_int16(serfd);
 
 	cmd_begin("Enabling UART");
-	fernvale_send_cmd(serfd, 0xdc);
+	ASSERT(fernvale_send_cmd(serfd, 0xdc));
 	fernvale_send_int32(serfd, 115200);
-	ret = fernvale_get_int16(serfd);
+	ASSERT(ret = fernvale_get_int16(serfd));
 	cmd_end_fmt("0x%04x", ret);
 
 	cmd_begin("Loading Fernly USB loader");
-	fernvale_cmd_send_file(serfd, 0x7000c000, "usb-loader.bin");
+	ASSERT(fernvale_cmd_send_fd(serfd, FERNLY_USB_LOADER_ADDR, s1blfd));
 	cmd_end();
 
-	cmd_begin("Executing usb-loader.bin");
-	fernvale_cmd_jump(serfd, 0x7000c000);
+	cmd_begin("Executing Ferly USB loader");
+	ASSERT(fernvale_cmd_jump(serfd, FERNLY_USB_LOADER_ADDR));
 	cmd_end();
 
-	cmd_begin("Waiting for banner");
-	fernvale_banner(serfd);
+	cmd_begin("Waiting for Fernly USB loader banner");
+	ASSERT(fernvale_wait_banner(serfd));
 	cmd_end();
 
-	cmd_begin("Writing firmware");
-	{
-		struct stat stats;
-		unsigned int bytes_to_write;
-		int i;
+	cmd_begin("Writing stage 2");
+	ASSERT(fernvale_write_stage2(serfd, binfd));
+	cmd_end();
 
-		if (-1 == fstat(binfd, &stats)) {
-			perror("Unable to get file stats");
-			exit(1);
-		}
-
-		bytes_to_write = stats.st_size;
-		printf("%d bytes... ", bytes_to_write);
-		fflush(stdout);
-		{
-#if 0
-			write(serfd, &bytes_to_write, 4);
-#else
-			uint8_t b;
-
-			b = bytes_to_write & 0xff;
-			write(serfd, &b, 1);
-
-			b = bytes_to_write >> 8 & 0xff;
-			write(serfd, &b, 1);
-
-			b = bytes_to_write >> 16 & 0xff;
-			write(serfd, &b, 1);
-
-			b = bytes_to_write >> 24 & 0xff;
-			write(serfd, &b, 1);
-#endif
-		}
-
-		uint8_t bfr[stats.st_size];
-		read(binfd, bfr, sizeof(bfr));
-
-#if (WRITE_ALL_AT_ONCE)
-		if (write(serfd, bfr, sizeof(bfr)) != sizeof(bfr)) {
-			perror("Unable to write firmware");
-			exit(1);
-		}
-		i = sizeof(bfr);
-#else
-		for (i = 0; i < sizeof(bfr); i++) {
-			printf("%6d / %6d\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", i, (int)sizeof(bfr));
-			if (1 != write(serfd, &bfr[i], 1)) {
-				perror("Unable to write firmware");
-				exit(1);
-			}
-		}
-#endif
-
-		cmd_end_fmt("%6d / %6d", i, (int)sizeof(bfr));
+	if (payloadfd != -1) {
+		cmd_begin("Entering download mode");
+		fernvale_wait_banner(serfd);
+		cmd_end();
+		
+		cmd_begin("Writing payload");
+		fernvale_write_stage3(serfd, payloadfd);
+		cmd_end();
 	}
 
 #ifdef MONITOR_BOOT
