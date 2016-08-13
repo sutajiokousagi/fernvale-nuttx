@@ -42,6 +42,10 @@ AOBJS = $(ASRCS:.S=$(OBJEXT))
 
 CSRCS = fernvale_boot.c fernvale_clkinit.c
 
+ifeq ($(CONFIG_FERNVALE_GSM),y)
+CSRCS += fernvale_gsm.c
+endif
+
 ifeq ($(CONFIG_FERNVALE_EXTDRAM),y)
 CSRCS += fernvale_mem.c
 endif
