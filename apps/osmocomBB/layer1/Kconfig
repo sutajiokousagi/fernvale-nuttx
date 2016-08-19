@@ -1,0 +1,22 @@
+#
+# For a description of the syntax of this configuration file,
+# see misc/tools/kconfig-language.txt.
+#
+
+config OSMOCOMBB_LAYER1
+	bool "Layer1 GSM application"
+	default n
+	---help---
+		Layer1 GSM application
+
+if OSMOCOMBB_LAYER1
+
+config OSMOCOMBB_LAYER1_PROGNAME
+        string "Program name"
+        default "layer1"
+        depends on BUILD_KERNEL
+        ---help---
+                This is the name of the program that will be use when the NSH ELF
+                program is installed.
+
+endif

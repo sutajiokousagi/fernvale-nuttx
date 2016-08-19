@@ -1,7 +1,7 @@
 ############################################################################
-# configs/olimex-lpc-h3131/src/Makefile
+# apps/examples/Makefile
 #
-#   Copyright (C) 2013 Gregory Nutt. All rights reserved.
+#   Copyright (C) 2011-2014 Gregory Nutt. All rights reserved.
 #   Author: Gregory Nutt <gnutt@nuttx.org>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,83 +33,46 @@
 #
 ############################################################################
 
--include $(TOPDIR)/Make.defs
+-include $(TOPDIR)/.config # Current configuration
 
-CFLAGS += -I$(TOPDIR)/sched
+# Sub-directories
 
-ASRCS =
-AOBJS = $(ASRCS:.S=$(OBJEXT))
+SUBDIRS  = layer1
 
-CSRCS = fernvale_boot.c fernvale_clkinit.c
+# Sub-directories that might need context setup.  Directories may need
+# context setup for a variety of reasons, but the most common is because
+# the example may be built as an NSH built-in function.
 
-ifeq ($(CONFIG_FERNVALE_GSM),y)
-CSRCS += fernvale_gsm.c
+CNTXTDIRS =
+
+ifeq ($(CONFIG_NSH_BUILTIN_APPS),y)
+CNTXTDIRS += layer1
 endif
 
-ifeq ($(CONFIG_FERNVALE_EXTDRAM),y)
-CSRCS += fernvale_mem.c
-endif
+all: nothing
 
-ifeq ($(CONFIG_ARCH_LEDS),y)
-CSRCS += fernvale_leds.c
-endif
+.PHONY: nothing context depend clean distclean
 
-ifeq ($(CONFIG_FERNVALE_SPI),y)
-CSRCS += fernvale_spi.c
-endif
+define SDIR_template
+$(1)_$(2):
+	$(Q) $(MAKE) -C $(1) $(2) TOPDIR="$(TOPDIR)" APPDIR="$(APPDIR)"
+endef
 
-ifeq ($(CONFIG_FERNVALE_MCI),y)
-CSRCS += fernvale_mmcsd.c
-endif
+$(foreach SDIR, $(CNTXTDIRS), $(eval $(call SDIR_template,$(SDIR),context)))
+$(foreach SDIR, $(SUBDIRS), $(eval $(call SDIR_template,$(SDIR),depend)))
+$(foreach SDIR, $(SUBDIRS), $(eval $(call SDIR_template,$(SDIR),clean)))
+$(foreach SDIR, $(SUBDIRS), $(eval $(call SDIR_template,$(SDIR),distclean)))
 
-ifeq ($(CONFIG_NSH_ARCHINIT),y)
-CSRCS += fernvale_nsh.c
-endif
+nothing:
 
-ifeq ($(CONFIG_FERNVALE_USBOTG),y)
-ifeq ($(CONFIG_USBHOST),y)
-CSRCS += fernvale_usbhost.c
-ifeq ($(CONFIG_EXAMPLES_HIDKBD),y)
-CSRCS += fernvale_hidkbd.c
-endif
-endif
-endif
+install:
 
-COBJS = $(CSRCS:.c=$(OBJEXT))
+context: $(foreach SDIR, $(CNTXTDIRS), $(SDIR)_context)
 
-SRCS = $(ASRCS) $(CSRCS)
-OBJS = $(AOBJS) $(COBJS)
+depend: $(foreach SDIR, $(SUBDIRS), $(SDIR)_depend)
 
-ARCH_SRCDIR = $(TOPDIR)/arch/$(CONFIG_ARCH)/src
-ifeq ($(WINTOOL),y)
-  CFLAGS += -I "${shell cygpath -w $(ARCH_SRCDIR)/chip}" -I "${shell cygpath -w $(ARCH_SRCDIR)/common}" -I "${shell cygpath -w $(ARCH_SRCDIR)/arm}"
-else
-  CFLAGS += -I$(ARCH_SRCDIR)/chip -I$(ARCH_SRCDIR)/common -I$(ARCH_SRCDIR)/arm
-endif
+clean: $(foreach SDIR, $(SUBDIRS), $(SDIR)_clean)
 
-all: libboard$(LIBEXT)
-
-$(AOBJS): %$(OBJEXT): %.S
-	$(call ASSEMBLE, $<, $@)
-
-$(COBJS) $(LINKOBJS): %$(OBJEXT): %.c
-	$(call COMPILE, $<, $@)
-
-libboard$(LIBEXT): $(OBJS)
-	$(call ARCHIVE, $@, $(OBJS))
-
-.depend: Makefile $(SRCS)
-	$(Q) $(MKDEP) $(CC) -- $(CFLAGS) -- $(SRCS) >Make.dep
-	$(Q) touch $@
-
-depend: .depend
-
-clean:
-	$(call DELFILE, libboard$(LIBEXT))
-	$(call CLEAN)
-
-distclean: clean
-	$(call DELFILE, Make.dep)
-	$(call DELFILE, .depend)
+distclean: $(foreach SDIR, $(SUBDIRS), $(SDIR)_distclean)
 
 -include Make.dep

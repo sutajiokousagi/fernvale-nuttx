@@ -35,6 +35,10 @@ menu "NxWidgets/NxWM"
 source "$APPSDIR/NxWidgets/Kconfig"
 endmenu
 
+menu "OsmocomBB"
+source "$APPSDIR/osmocomBB/Kconfig"
+endmenu
+
 menu "Platform-specific Support"
 source "$APPSDIR/platform/Kconfig"
 endmenu

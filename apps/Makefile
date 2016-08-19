@@ -49,7 +49,7 @@ APPDIR = ${shell pwd}
 
 CONFIGURED_APPS =
 SUBDIRS  = examples graphics interpreters modbus builtin nshlib netutils
-SUBDIRS += platform system
+SUBDIRS += platform system osmocomBB
 
 # The list of configured directories is derived from NuttX configuration
 # file:  The selected applications are enabled settings in the configuration
@@ -70,6 +70,7 @@ include interpreters/Make.defs
 include modbus/Make.defs
 include netutils/Make.defs
 include nshlib/Make.defs
+include osmocomBB/Make.defs
 include platform/Make.defs
 include system/Make.defs
 -include external/Make.defs
